@@ -19,7 +19,7 @@ class Auth extends _$Auth {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final authRepository = AuthRepository();
-      await authRepository.signIn(email: email, password: password);
+      await authRepository.signUp(email: email, password: password, name: '', fullName: '');
       return _getUser();
     });
   }

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'l10n.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
+import 'theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // Core screens
 import 'package:ekfalninew/screens/splash.dart';
@@ -23,6 +25,9 @@ import 'features/donation/screens/mydonat.dart';
 import 'features/donation/screens/fooddonation.dart';
 import 'features/donation/screens/donationschool.dart';
 import 'features/donation/screens/clothesdonation.dart';
+import 'features/donation/screens/donation_form.dart';
+import 'features/donation/screens/donation_list_screen.dart';
+import 'features/donation/screens/donation_statistics_widget.dart';
 
 import 'features/sponsor/screens/sponsor.dart';
 import 'features/sponsor/screens/orphansponsorship.dart';
@@ -67,16 +72,96 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
+          seedColor: AppTheme.primaryColor,
           brightness: Brightness.light,
         ),
+        scaffoldBackgroundColor: AppTheme.backgroundColor,
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppTheme.primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
+        ),
+        cardTheme: CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          color: AppTheme.cardColor,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: AppTheme.elevatedButtonStyle,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppTheme.backgroundColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+          ),
+        ),
+        textTheme: GoogleFonts.cairoTextTheme(),
+        pageTransitionsTheme: AppTheme.pageTransitionsTheme,
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
+          seedColor: AppTheme.primaryColor,
           brightness: Brightness.dark,
         ),
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppTheme.primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
+        ),
+        cardTheme: CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          color: const Color(0xFF1E1E1E),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: AppTheme.elevatedButtonStyle,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF1E1E1E),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+          ),
+        ),
+        textTheme: GoogleFonts.cairoTextTheme(ThemeData.dark().textTheme),
+        pageTransitionsTheme: AppTheme.pageTransitionsTheme,
       ),
       supportedLocales: const [Locale('en'), Locale('ar')],
       localizationsDelegates: const [

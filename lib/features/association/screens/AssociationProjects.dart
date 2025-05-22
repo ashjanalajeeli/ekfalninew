@@ -26,7 +26,7 @@ class AssociationProjects extends StatelessWidget {
       appBar: AppBar(
         title: Text('مشاريع - $associationName'),
         centerTitle: true,
-        backgroundColor: const Color(0xFFAA5156),
+        backgroundColor: Colors.teal,
         elevation: 0,
       ),
       body: Container(

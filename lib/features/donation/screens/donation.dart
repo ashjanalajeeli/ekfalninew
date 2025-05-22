@@ -1,3 +1,4 @@
+import 'package:ekfalninew/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ekfalninew/models/donation_model.dart';
@@ -11,8 +12,18 @@ import 'package:ekfalninew/features/payment/screens/PayPal.dart';
 import 'package:ekfalninew/features/payment/screens/CreditCard.dart';
 import 'package:ekfalninew/features/payment/screens/BankTransfer.dart';
 
+
 class donation extends ConsumerStatefulWidget {
-  const donation({super.key});
+  final String? projectTitle;
+  final String? projectDescription;
+  final String? donationType;
+
+  const donation({
+    super.key,
+    this.projectTitle,
+    this.projectDescription,
+    this.donationType,
+  });
 
   @override
   ConsumerState<donation> createState() => _donationState();
@@ -22,8 +33,8 @@ class _donationState extends ConsumerState<donation> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  final List<String> _countryCodes = ['+966', '+20', '+971', '+1', '+44', '+49'];
-  String _selectedCountryCode = '+966';
+  final List<String> _countryCodes = ['+967','+966', '+20', '+971', '+1', '+44', '+49'];
+  String _selectedCountryCode = '+967';
 
   @override
   void initState() {
@@ -31,6 +42,11 @@ class _donationState extends ConsumerState<donation> {
     // Initialize form with default values
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(donationFormProvider.notifier).resetForm();
+      
+      // If this is a project donation, set the category
+      if (widget.donationType == 'project') {
+        ref.read(donationFormProvider.notifier).updateCategory('project');
+      }
     });
   }
 
@@ -85,13 +101,15 @@ class _donationState extends ConsumerState<donation> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       amount: formState['amount'],
       currency: formState['currency'],
-      donationType: formState['donationType'],
+      donationType: widget.donationType ?? formState['donationType'],
       category: formState['category'].isEmpty ? 'general' : formState['category'],
       donorId: user.id,
       donorName: user.name,
       createdAt: DateTime.now(),
       status: 'pending',
       paymentMethod: paymentMethod,
+      projectTitle: widget.projectTitle,
+      projectDescription: widget.projectDescription,
     );
 
     try {
@@ -100,13 +118,28 @@ class _donationState extends ConsumerState<donation> {
       if (mounted) {
         switch (paymentMethod) {
           case 'credit_card':
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CreditCardPage(),
+              ),
+            );
             break;
           case 'paypal':
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const PayPalPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PayPalPage(),
+              ),
+            );
             break;
           case 'bank_transfer':
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const BankTransferPage()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BankTransferPage(),
+              ),
+            );
             break;
         }
       }
@@ -125,108 +158,156 @@ class _donationState extends ConsumerState<donation> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(donationFormProvider);
+    final theme = Theme.of(context);
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text('تبرع معنا', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.teal,
+          title: Text(
+            widget.projectTitle ?? 'تبرع معنا',
+            style: AppTheme.headingStyle.copyWith(color: Colors.white),
+          ),
+          backgroundColor: AppTheme.primaryColor,
           elevation: 0,
           centerTitle: true,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
         ),
         endDrawer: const drawer(),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
-              const Text("اختر نوع التبرع", textAlign: TextAlign.right, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(child: _donationTypeButton("مرة واحدة")),
-                  const SizedBox(width: 10),
-                  Expanded(child: _donationTypeButton("شهري")),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text("الفئات", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildCategoryIcon(context, Icons.school, "مواد دراسية", () {
-                    ref.read(donationFormProvider.notifier).updateCategory('school');
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => DonationSchoolScreen()));
-                  }),
-                  _buildCategoryIcon(context, Icons.checkroom, "ملابس", () {
-                    ref.read(donationFormProvider.notifier).updateCategory('clothes');
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => DonationClothesScreen()));
-                  }),
-                  _buildCategoryIcon(context, Icons.food_bank, "مواد غذائية", () {
-                    ref.read(donationFormProvider.notifier).updateCategory('food');
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => DonationFoodScreen()));
-                  }),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Text("أدخل مبلغ التبرع", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: "مثال: 100",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+              if (widget.projectDescription != null) ...[
+                _buildSection(
+                  title: "تفاصيل المشروع",
+                  child: Text(
+                    widget.projectDescription!,
+                    style: AppTheme.bodyStyle,
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              if (widget.donationType != 'project') ...[
+                _buildSection(
+                  title: "اختر نوع التبرع",
+                  child: Row(
+                    children: [
+                      Expanded(child: _donationTypeButton("مرة واحدة")),
+                      const SizedBox(width: 12),
+                      Expanded(child: _donationTypeButton("شهري")),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                _buildSection(
+                  title: "الفئات",
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildCategoryIcon(context, Icons.school, "مواد دراسية", () {
+                        ref.read(donationFormProvider.notifier).updateCategory('school');
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DonationSchoolScreen()));
+                      }),
+                      _buildCategoryIcon(context, Icons.checkroom, "ملابس", () {
+                        ref.read(donationFormProvider.notifier).updateCategory('clothes');
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DonationClothesScreen()));
+                      }),
+                      _buildCategoryIcon(context, Icons.food_bank, "مواد غذائية", () {
+                        ref.read(donationFormProvider.notifier).updateCategory('food');
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DonationFoodScreen()));
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              _buildSection(
+                title: "أدخل مبلغ التبرع",
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: AppTheme.inputDecoration("مثال: 100"),
+                        textAlign: TextAlign.right,
+                        onChanged: (value) {
+                          final amount = double.tryParse(value);
+                          if (amount != null) {
+                            ref.read(donationFormProvider.notifier).updateAmount(amount);
+                          }
+                        },
                       ),
-                      textAlign: TextAlign.right,
-                      onChanged: (value) {
-                        final amount = double.tryParse(value);
-                        if (amount != null) {
-                          ref.read(donationFormProvider.notifier).updateAmount(amount);
-                        }
-                      },
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  DropdownButton<String>(
-                    value: formState['currency'],
-                    items: ['SR', '\$', 'YR'].map((currency) {
-                      return DropdownMenuItem<String>(
-                        value: currency,
-                        child: Text(currency, textDirection: TextDirection.ltr),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        ref.read(donationFormProvider.notifier).updateCurrency(value);
-                      }
-                    },
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: DropdownButton<String>(
+                        value: formState['currency'],
+                        items: ['SR', '\$', 'YR'].map((currency) {
+                          return DropdownMenuItem<String>(
+                            value: currency,
+                            child: Text(
+                              currency,
+                              textDirection: TextDirection.ltr,
+                              style: AppTheme.bodyStyle,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            ref.read(donationFormProvider.notifier).updateCurrency(value);
+                          }
+                        },
+                        underline: Container(),
+                        icon: Icon(Icons.arrow_drop_down, color: AppTheme.primaryColor),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
-              const Text("المعلومات الشخصية", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              _buildTextField("الاسم الكامل", _nameController),
-              _buildTextField("البريد الإلكتروني", _emailController),
-              _buildPhoneField(),
-              const SizedBox(height: 20),
-              const Text("طريقة الدفع", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(child: _paymentMethodButton("Credit Card", () => _processDonation('credit_card'))),
-                  const SizedBox(width: 10),
-                  Expanded(child: _paymentMethodButton("PayPal", () => _processDonation('paypal'))),
-                  const SizedBox(width: 10),
-                  Expanded(child: _paymentMethodButton("Bank Transfer", () => _processDonation('bank_transfer'))),
-                ],
+              
+              const SizedBox(height: 24),
+              
+              _buildSection(
+                title: "المعلومات الشخصية",
+                child: Column(
+                  children: [
+                    _buildTextField("الاسم الكامل", _nameController),
+                    const SizedBox(height: 12),
+                    _buildTextField("البريد الإلكتروني", _emailController),
+                    const SizedBox(height: 12),
+                    _buildPhoneField(),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              _buildSection(
+                title: "طريقة الدفع",
+                child: Row(
+                  children: [
+                    Expanded(child: _paymentMethodButton("Credit Card", () => _processDonation('credit_card'))),
+                    const SizedBox(width: 12),
+                    Expanded(child: _paymentMethodButton("PayPal", () => _processDonation('paypal'))),
+                    const SizedBox(width: 12),
+                    Expanded(child: _paymentMethodButton("Bank Transfer", () => _processDonation('bank_transfer'))),
+                  ],
+                ),
               ),
             ],
           ),
@@ -238,7 +319,7 @@ class _donationState extends ConsumerState<donation> {
   Widget _donationTypeButton(String label) {
     final formState = ref.watch(donationFormProvider);
     final bool isSelected = formState['donationType'] == (label == 'مرة واحدة' ? 'one-time' : 'monthly');
-    
+
     return ElevatedButton(
       onPressed: () {
         ref.read(donationFormProvider.notifier).updateDonationType(
@@ -332,7 +413,7 @@ class _donationState extends ConsumerState<donation> {
   Widget _buildCategoryIcon(BuildContext context, IconData icon, String label, VoidCallback onTap) {
     final formState = ref.watch(donationFormProvider);
     final isSelected = formState['category'] == label.toLowerCase();
-    
+
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -352,6 +433,20 @@ class _donationState extends ConsumerState<donation> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSection({required String title, required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppTheme.headingStyle,
+        ),
+        const SizedBox(height: 12),
+        child,
+      ],
     );
   }
 }

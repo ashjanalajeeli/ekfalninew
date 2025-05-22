@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'AssociationProjects.dart';
 import 'AssociationModel.dart';
+import 'package:ekfalninew/drawer/CustomDrawer.dart';
 
 class Association extends StatelessWidget {
   final List<AssociationModel> associations = [
@@ -8,7 +9,7 @@ class Association extends StatelessWidget {
       name: 'جمعية البر الخيرية',
       logoUrl: 'assets/images/logo1.png',
       description: 'توفر الجمعية الدعم للأسر المحتاجة، وتشمل خدماتها الأيتام.',
-      location: 'الرياض، السعودية',
+      location: 'حضرموت، اليمن',
       email: 'info@albir.org.sa',
       orphanCount: 120,
       projectCount: 8,
@@ -17,7 +18,7 @@ class Association extends StatelessWidget {
       name: 'جمعية كافل اليتيم',
       logoUrl: 'assets/images/logo2.png',
       description: 'تهدف إلى كفالة الأيتام وتوفير الرعاية الصحية والتعليم.',
-      location: 'جدة، السعودية',
+      location: 'حضرموت، اليمن',
       email: 'contact@kafel.org.sa',
       orphanCount: 200,
       projectCount: 11,
@@ -26,7 +27,7 @@ class Association extends StatelessWidget {
       name: 'جمعية الأمل',
       logoUrl: 'assets/images/logo3.png',
       description: 'تدعم الفئات الضعيفة عبر مشاريع اجتماعية وتنموية.',
-      location: 'الدمام، السعودية',
+      location: 'حضرموت، اليمن',
       email: 'support@alamal.org.sa',
       orphanCount: 75,
       projectCount: 6,
@@ -43,6 +44,8 @@ class Association extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.teal,
       ),
+
+      endDrawer: const drawer(),
       body: ListView.builder(
         itemCount: associations.length,
         itemBuilder: (context, index) {

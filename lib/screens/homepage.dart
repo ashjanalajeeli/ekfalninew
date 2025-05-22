@@ -51,7 +51,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
           title: Text(
-            tr.translate('home'),
+            tr.translate('الصفحة الرئيسية'),
             style: const TextStyle(fontSize: 20),
           ),
           centerTitle: true,
