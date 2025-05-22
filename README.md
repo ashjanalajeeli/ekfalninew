@@ -25,7 +25,7 @@ A Flutter-based charity platform application that connects donors with those in 
 
 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/ekfalninew.git
+git clone https://github.com/ashjanalajeeli/ekfalninew.git
 ```
 
 2. Navigate to the project directory
@@ -82,5 +82,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Your Name - your.email@example.com
-Project Link: https://github.com/YOUR_USERNAME/ekfalninew
+Project Link: https://github.com/ashjanalajeeli/ekfalninew
