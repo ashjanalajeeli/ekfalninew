@@ -177,8 +177,32 @@ class _donationState extends ConsumerState<donation> {
               bottom: Radius.circular(20),
             ),
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/mydonat');
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.teal),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'سجل التبرعات',
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        endDrawer: const drawer(),
+        drawer: const drawer(),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -421,7 +445,7 @@ class _donationState extends ConsumerState<donation> {
           Icon(
             icon,
             size: 30,
-            color: isSelected ? Colors.teal : Colors.grey,
+            color: Colors.teal, //  لون دائم
           ),
           const SizedBox(height: 5),
           Text(
@@ -435,6 +459,7 @@ class _donationState extends ConsumerState<donation> {
       ),
     );
   }
+
 
   Widget _buildSection({required String title, required Widget child}) {
     return Column(

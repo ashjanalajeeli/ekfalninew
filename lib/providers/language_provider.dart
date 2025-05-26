@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'app_state_provider.dart';
 
 final languageProvider = StateNotifierProvider<LanguageNotifier, Locale>((ref) {
-  return LanguageNotifier();
+  return LanguageNotifier(ref);
 });
 
 class LanguageNotifier extends StateNotifier<Locale> {
-  LanguageNotifier() : super(const Locale('en')) {
+  final Ref ref;
+  
+  LanguageNotifier(this.ref) : super(const Locale('en')) {
     _loadLanguage();
   }
 
@@ -23,6 +26,9 @@ class LanguageNotifier extends StateNotifier<Locale> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, languageCode);
     state = Locale(languageCode);
+    
+    // Trigger app refresh when language changes
+    ref.read(appStateProvider.notifier).refreshApp();
   }
 
   bool get isArabic => state.languageCode == 'ar';

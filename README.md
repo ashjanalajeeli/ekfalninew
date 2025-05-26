@@ -1,71 +1,69 @@
-# Ekfalni - Charity Platform
+# Ekfalni - Orphan Sponsorship App
 
-A Flutter-based charity platform application that connects donors with those in need.
+A Flutter application for managing orphan sponsorships and donations.
 
 ## Features
 
-- User Authentication (Login/Register)
-- Profile Management
-- Donation Management
-- Real-time Updates
-- Secure API Integration
-- Multi-language Support
-- Responsive UI Design
+- Orphan sponsorship management
+- Financial and in-kind donations
+- User profile and donation history
+- Secure payment processing
+- Multi-language support (Arabic/English)
+- Beautiful and modern UI with Material Design 3
 
 ## Getting Started
 
 ### Prerequisites
 
-- Flutter SDK (^3.5.4)
-- Dart SDK (^3.5.4)
-- Android Studio / VS Code
+- Flutter SDK (latest stable version)
+- Dart SDK (latest stable version)
+- Android Studio / VS Code with Flutter extensions
 - Git
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
 ```bash
 git clone https://github.com/ashjanalajeeli/ekfalninew.git
 ```
 
-2. Navigate to the project directory
+2. Navigate to the project directory:
 ```bash
 cd ekfalninew
 ```
 
-3. Install dependencies
+3. Install dependencies:
 ```bash
 flutter pub get
 ```
 
-4. Run the build runner to generate necessary files
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-5. Run the app
+4. Run the app:
 ```bash
 flutter run
 ```
 
-### Environment Setup
+### Configuration
 
-1. Update the API base URL in `lib/config/api_config.dart`
-2. Configure your backend server URL
-3. Set up environment variables if needed
+1. Make sure to update the configuration files with your API keys and endpoints
+2. Update the assets in the `assets` directory as needed
+3. Configure Firebase if you're using Firebase services
 
 ## Project Structure
 
 ```
 lib/
-├── config/         # Configuration files
-├── models/         # Data models
-├── services/       # API and other services
-├── repositories/   # Data repositories
-├── screens/        # UI screens
-├── widgets/        # Reusable widgets
-├── theme/         # Theme configuration
-└── main.dart      # Entry point
+├── core/
+│   ├── services/
+│   ├── utils/
+│   └── widgets/
+├── features/
+│   ├── auth/
+│   ├── donation/
+│   ├── sponsor/
+│   └── profile/
+├── models/
+├── providers/
+└── main.dart
 ```
 
 ## Contributing
@@ -82,4 +80,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Project Link: https://github.com/ashjanalajeeli/ekfalninew
+Ashjan Alajeeli - [@ashjanalajeeli](https://github.com/ashjanalajeeli)

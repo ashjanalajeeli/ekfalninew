@@ -93,4 +93,16 @@ class Donation {
       projectDescription: json['projectDescription'] as String?,
     );
   }
+
+  String get title => projectTitle ?? 'تبرع $donationType';
+
+  String get date => createdAt.toString();
+
+  String get type => donationType;
+
+  String? get details => projectDescription;
+
+  String? get campaignId => projectTitle != null ? id : null;
+
+  String? get description => projectDescription;
 } 

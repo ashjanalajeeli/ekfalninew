@@ -12,7 +12,7 @@ class DonationFormScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Make a Donation'),
+        title: const Text('تبرع'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -23,7 +23,7 @@ class DonationFormScreen extends ConsumerWidget {
             TextFormField(
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                labelText: 'Amount',
+                labelText: 'المبلغ',
                 prefixText: 'SR ',
               ),
               onChanged: (value) {
@@ -33,42 +33,6 @@ class DonationFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Donation Type Selection
-            DropdownButtonFormField<String>(
-              value: formState['donationType'],
-              decoration: const InputDecoration(
-                labelText: 'Donation Type',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'one-time', child: Text('One Time')),
-                DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
-                DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
-              ],
-              onChanged: (value) {
-                ref.read(donationFormProvider.notifier)
-                    .updateDonationType(value!);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Category Selection
-            DropdownButtonFormField<String>(
-              value: formState['category'].isEmpty ? null : formState['category'],
-              decoration: const InputDecoration(
-                labelText: 'Category',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'food', child: Text('Food')),
-                DropdownMenuItem(value: 'clothes', child: Text('Clothes')),
-                DropdownMenuItem(value: 'education', child: Text('Education')),
-                DropdownMenuItem(value: 'medical', child: Text('Medical')),
-              ],
-              onChanged: (value) {
-                ref.read(donationFormProvider.notifier)
-                    .updateCategory(value!);
-              },
-            ),
-            const SizedBox(height: 16),
 
             // Payment Method Selection
             DropdownButtonFormField<String>(
@@ -94,10 +58,9 @@ class DonationFormScreen extends ConsumerWidget {
                 final donation = Donation(
                   amount: formState['amount'],
                   currency: 'SAR', // أو اجعلها جزء من الفورم إذا أردت
-                  donationType: formState['donationType'],
                   category: formState['category'],
                   status: 'pending',
-                  createdAt: DateTime.now(), id: '', donorId: '', donorName: '',
+                  createdAt: DateTime.now(), id: '', donorId: '', donorName: '', donationType: '',
                 );
 
                 await ref.read(donationListProvider.notifier)
@@ -107,12 +70,12 @@ class DonationFormScreen extends ConsumerWidget {
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Donation submitted successfully')),
+                    const SnackBar(content: Text('تم التبرع بنجاح')),
                   );
                   Navigator.pop(context);
                 }
               },
-              child: const Text('Submit Donation'),
+              child: const Text('تبرع'),
             ),
           ],
         ),

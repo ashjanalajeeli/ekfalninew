@@ -1,11 +1,15 @@
+import 'package:ekfalninew/providers/app_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/init.dart';
+
 import 'l10n.dart';
 import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '';
 
 // Core screens
 import 'package:ekfalninew/screens/splash.dart';
@@ -44,7 +48,8 @@ import 'features/payment/screens/paypal.dart';
 import 'features/payment/screens/creditcard.dart';
 import 'features/payment/screens/banktransfer.dart';
 
-void main() {
+void main() async {
+  await AppInitializer.initialize();
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -64,6 +69,8 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(languageProvider);
+    // Watch app state to trigger rebuild when language changes
+    ref.watch(appStateProvider);
     
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -187,6 +194,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/fooddonation': (context) => DonationFoodScreen(),
         '/schooldonation': (context) => DonationSchoolScreen(),
         '/clothesdonation': (context) => DonationClothesScreen(),
+        '/DonationFormScreen':(context) => DonationFormScreen(),
 
         // الكفالة
         '/sponsor': (context) => sponsor(),

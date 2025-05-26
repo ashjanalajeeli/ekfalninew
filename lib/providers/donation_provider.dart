@@ -1,8 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/donation_model.dart';
 import '../repositories/donation_repository.dart';
+import '../services/donation_service.dart';
 
 part 'donation_provider.g.dart';
+
+@riverpod
+DonationService donationService(DonationServiceRef ref) {
+  return DonationService();
+}
 
 @riverpod
 class DonationList extends _$DonationList {
@@ -12,15 +18,17 @@ class DonationList extends _$DonationList {
   }
 
   Future<List<Donation>> _getDonations() async {
-    final repository = DonationRepository();
+    final service = ref.read(donationServiceProvider);
+    final repository = DonationRepository(donationService: service);
     return repository.getAllDonations();
   }
 
   Future<void> createDonation(Donation donation) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final repository = DonationRepository();
-      await repository.createDonation(donation);
+      final service = ref.read(donationServiceProvider);
+      final repository = DonationRepository(donationService: service);
+      await repository.createDonation(donation.toJson());
       return _getDonations();
     });
   }
@@ -28,7 +36,8 @@ class DonationList extends _$DonationList {
   Future<void> updateDonationStatus(String donationId, String status) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final repository = DonationRepository();
+      final service = ref.read(donationServiceProvider);
+      final repository = DonationRepository(donationService: service);
       await repository.updateDonationStatus(donationId, status);
       return _getDonations();
     });
@@ -39,7 +48,8 @@ class DonationList extends _$DonationList {
 class UserDonations extends _$UserDonations {
   @override
   Future<List<Donation>> build(String userId) async {
-    final repository = DonationRepository();
+    final service = ref.read(donationServiceProvider);
+    final repository = DonationRepository(donationService: service);
     return repository.getDonationsByUser(userId);
   }
 }
@@ -48,7 +58,8 @@ class UserDonations extends _$UserDonations {
 class CategoryDonations extends _$CategoryDonations {
   @override
   Future<List<Donation>> build(String category) async {
-    final repository = DonationRepository();
+    final service = ref.read(donationServiceProvider);
+    final repository = DonationRepository(donationService: service);
     return repository.getDonationsByCategory(category);
   }
 }
@@ -57,7 +68,8 @@ class CategoryDonations extends _$CategoryDonations {
 class DonationStatistics extends _$DonationStatistics {
   @override
   Future<Map<String, dynamic>> build() async {
-    final repository = DonationRepository();
+    final service = ref.read(donationServiceProvider);
+    final repository = DonationRepository(donationService: service);
     return repository.getDonationStatistics();
   }
 }

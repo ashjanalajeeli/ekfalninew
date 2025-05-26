@@ -15,7 +15,7 @@ class User {
     required this.name,
     required this.fullName,
     required this.password,
-    this.profileImage,
+    this.profileImage, String? photoUrl,
 
   });
 

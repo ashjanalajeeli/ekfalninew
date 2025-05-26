@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 part 'auth_provider.g.dart';
 
 @riverpod
@@ -19,7 +20,7 @@ class Auth extends _$Auth {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final authRepository = AuthRepository();
-      await authRepository.signUp(email: email, password: password, name: '', fullName: '');
+      await authRepository.login(email: email, password: password);
       return _getUser();
     });
   }
@@ -39,15 +40,10 @@ class Auth extends _$Auth {
         password: password,
         name: name,
         fullName: fullName,
-
-
       );
       return _getUser();
     });
   }
-
-
-
 
   Future<void> updateProfile({
     required String name,
@@ -60,13 +56,11 @@ class Auth extends _$Auth {
       email: email,
       profileImage: profileImage,
     );
-    // إعادة تحميل بيانات المستخدم المحدثة
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       return _getUser();
     });
   }
-
 
   Future<void> updatePassword({
     required String currentPassword,
@@ -79,7 +73,6 @@ class Auth extends _$Auth {
     );
   }
 
-
   Future<void> signOut() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -88,4 +81,40 @@ class Auth extends _$Auth {
       return null;
     });
   }
+}
+
+/*
+final authProvider = StateNotifierProvider<AuthNotifier, AsyncValue<User?>>((ref) {
+  return AuthNotifier(AuthRepository());
+});
+*/
+
+class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
+  final AuthRepository _repository;
+
+  AuthNotifier(this._repository) : super(const AsyncValue.data(null)) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    try {
+      final user = await _repository.getCurrentUser();
+      state = AsyncValue.data(user);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> signOut() async {
+    try {
+      state = const AsyncValue.loading();
+      await _repository.signOut();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  // ... existing methods ...
 } 

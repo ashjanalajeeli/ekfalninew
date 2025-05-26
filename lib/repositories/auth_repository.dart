@@ -1,4 +1,4 @@
-import 'dart:convert'; // لإستخدام jsonEncode و jsonDecode
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import 'package:dio/dio.dart';
@@ -107,8 +107,11 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userKey);
+    try {
+      await SharedPreferences.getInstance().then((prefs) => prefs.remove(_userKey));
+    } catch (e) {
+      throw Exception('حدث خطأ في تسجيل الخروج');
+    }
   }
 
   Future<void> updatePassword({
@@ -123,6 +126,6 @@ class AuthRepository {
     required String email,
     String? profileImage,
   }) async {
-
+    // Implementation will be added later
   }
 }

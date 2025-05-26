@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ekfalninew/features/sponsor/providers/sponsor_provider.dart';
 
-class SponsorshipConfirmation extends StatefulWidget {
+class SponsorshipConfirmation extends ConsumerStatefulWidget {
   final String orphanName;
   final int duration;
-  final int amount;
+  final double amount;
+  final bool isRenewal;
 
   const SponsorshipConfirmation({
-    Key? key,
     required this.orphanName,
     required this.duration,
     required this.amount,
+    this.isRenewal = false,
+    Key? key,
   }) : super(key: key);
 
   @override
-  _SponsorshipConfirmationState createState() => _SponsorshipConfirmationState();
+  ConsumerState<SponsorshipConfirmation> createState() => _SponsorshipConfirmationState();
 }
 
-class _SponsorshipConfirmationState extends State<SponsorshipConfirmation> {
+class _SponsorshipConfirmationState extends ConsumerState<SponsorshipConfirmation> {
   final TextEditingController arabicNameController = TextEditingController();
   final TextEditingController englishNameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
@@ -41,14 +45,80 @@ class _SponsorshipConfirmationState extends State<SponsorshipConfirmation> {
     '+961', // لبنان
   ];
 
+  bool _isProcessing = false;
+
+  Future<void> _confirmSponsorship() async {
+    setState(() => _isProcessing = true);
+
+    try {
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Add to sponsorship register based on type
+      if (widget.isRenewal) {
+        ref.read(sponsorNotifierProvider.notifier).addSponsorshipRenewal(
+          orphanId: widget.orphanName,
+          amount: widget.amount.toString(),
+          duration: widget.duration,
+          frequency: 'monthly',
+        );
+      } else {
+        ref.read(sponsorNotifierProvider.notifier).addNewSponsorship(
+          orphanId: widget.orphanName,
+          amount: widget.amount.toString(),
+          duration: widget.duration,
+          frequency: 'monthly',
+        );
+      }
+
+      if (mounted) {
+        // Show success dialog
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(widget.isRenewal ? 'تم تجديد الكفالة بنجاح' : 'تمت الكفالة بنجاح'),
+            content: Text(
+              widget.isRenewal
+                  ? 'تم تجديد كفالة ${widget.orphanName} بنجاح لمدة ${widget.duration} شهر'
+                  : 'تمت كفالة ${widget.orphanName} بنجاح لمدة ${widget.duration} شهر',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/mysponsor', // Navigate to sponsorships register
+                    (route) => false,
+                  );
+                },
+                child: const Text('عرض سجل الكفالات'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في عملية الكفالة: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('تأكيد الكفالة', style: TextStyle(color: Colors.white)),
-          backgroundColor:Colors.teal,
+          title: Text(widget.isRenewal ? 'تأكيد تجديد الكفالة' : 'تأكيد الكفالة'),
+          backgroundColor: Colors.teal,
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -143,24 +213,7 @@ class _SponsorshipConfirmationState extends State<SponsorshipConfirmation> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (agreedToTerms &&
-                        arabicNameController.text.isNotEmpty &&
-                        englishNameController.text.isNotEmpty &&
-                        phoneController.text.isNotEmpty &&
-                        emailController.text.isNotEmpty && // <-- تأكد من الايميل
-                        idController.text.isNotEmpty &&
-                        residenceController.text.isNotEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('تم تأكيد الكفالة بنجاح')),
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('يرجى تعبئة جميع الحقول والموافقة على الشروط')),
-                      );
-                    }
-                  },
+                  onPressed: _isProcessing ? null : _confirmSponsorship,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -168,10 +221,12 @@ class _SponsorshipConfirmationState extends State<SponsorshipConfirmation> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    "تأكيد الكفالة",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
+                  child: _isProcessing
+                      ? const CircularProgressIndicator()
+                      : const Text(
+                          "تأكيد الكفالة",
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
                 ),
               ),
             ],

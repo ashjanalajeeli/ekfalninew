@@ -191,24 +191,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ],
               ),
               const SizedBox(height: 15),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      child: const Text("Google"),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      child: const Text("Facebook"),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
               OutlinedButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/signup');

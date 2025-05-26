@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ekfalninew/features/donation/screens/donation_form.dart';
 
 class ProjectDetailsPage extends StatelessWidget {
   final String projectTitle;
@@ -42,6 +43,7 @@ class ProjectDetailsPage extends StatelessWidget {
                 Center(
                   child: ElevatedButton.icon(
                     onPressed: () {
+                      Navigator.pushNamed(context, '/DonationFormScreen');
                       // هنا تقدر تروح لصفحة التبرع
                     },
                     icon: Icon(Icons.favorite_border),

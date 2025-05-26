@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/api_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   late final Dio _dio;
   static ApiService? _instance;
+  static const String _tokenKey = 'auth_token';
 
   ApiService._() {
     _dio = Dio(
@@ -33,18 +35,18 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Get token from secure storage or shared preferences
-          // final token = await getToken();
-          // if (token != null) {
-          //   options.headers['Authorization'] = 'Bearer $token';
-          // }
+          final token = await _getToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
           return handler.next(options);
         },
         onError: (DioException e, handler) async {
           if (e.response?.statusCode == 401) {
             // Handle token expiration
-            // await refreshToken();
-            // Retry the request
+            await _handleTokenExpiration();
+            // Retry the request with new token
+            return handler.resolve(await _retryRequest(e.requestOptions));
           }
           return handler.next(e);
         },
@@ -57,10 +59,47 @@ class ApiService {
     return _instance!;
   }
 
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
+  }
+
+  Future<void> setToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+  }
+
+  Future<void> _handleTokenExpiration() async {
+    // Clear the expired token
+    await clearToken();
+    // You might want to navigate to login screen or refresh token here
+  }
+
+  Future<Response<dynamic>> _retryRequest(RequestOptions requestOptions) async {
+    final options = Options(
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+    );
+
+    return _dio.request<dynamic>(
+      requestOptions.path,
+      data: requestOptions.data,
+      queryParameters: requestOptions.queryParameters,
+      options: options,
+    );
+  }
+
+  // Generic request methods
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
+    bool requiresAuth = true,
   }) async {
     try {
       final response = await _dio.get(
@@ -79,6 +118,7 @@ class ApiService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    bool requiresAuth = true,
   }) async {
     try {
       final response = await _dio.post(
@@ -98,6 +138,7 @@ class ApiService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    bool requiresAuth = true,
   }) async {
     try {
       final response = await _dio.put(
@@ -117,6 +158,7 @@ class ApiService {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
+    bool requiresAuth = true,
   }) async {
     try {
       final response = await _dio.delete(
@@ -161,4 +203,4 @@ class ApiService {
       statusCode: 500,
     );
   }
-} 
+}

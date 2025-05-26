@@ -8,6 +8,45 @@ import '../screens/profile.dart';
 class SettingPage extends ConsumerWidget {
   const SettingPage({super.key});
 
+  void _showLanguageDialog(BuildContext context, WidgetRef ref) {
+    final tr = AppLocalizations.of(context)!;
+    final currentLocale = ref.watch(languageProvider);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr.translate('select_language')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('English'),
+              leading: Radio<String>(
+                value: 'en',
+                groupValue: currentLocale.languageCode,
+                onChanged: (value) {
+                  ref.read(languageProvider.notifier).setLanguage(value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('العربية'),
+              leading: Radio<String>(
+                value: 'ar',
+                groupValue: currentLocale.languageCode,
+                onChanged: (value) {
+                  ref.read(languageProvider.notifier).setLanguage(value!);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tr = AppLocalizations.of(context)!;
@@ -15,21 +54,21 @@ class SettingPage extends ConsumerWidget {
     final currentLocale = ref.watch(languageProvider);
     final isArabic = currentLocale.languageCode == 'ar';
 
-    return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(tr.translate('settings')),
-          leading: isArabic ? null : BackButton(),
-          actions: [
-            if (isArabic) BackButton(),
-          ],
-        ),
-        body: ListView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(tr.translate('settings')),
+        leading: isArabic ? null : const BackButton(),
+        actions: [
+          if (isArabic) const BackButton(),
+        ],
+      ),
+      body: Directionality(
+        textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+        child: ListView(
           children: [
             ListTile(
               title: Text(tr.translate('profile')),
-              leading: const Icon(Icons.person),
+              leading: const Icon(Icons.person, color: Colors.teal),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 Navigator.push(
@@ -42,15 +81,9 @@ class SettingPage extends ConsumerWidget {
             ),
             ListTile(
               title: Text(tr.translate('change_language')),
-              leading: const Icon(Icons.language),
-              trailing: Switch(
-                value: isArabic,
-                onChanged: (bool value) {
-                  ref.read(languageProvider.notifier).setLanguage(
-                    value ? 'ar' : 'en',
-                  );
-                },
-              ),
+              leading: const Icon(Icons.language, color: Colors.teal),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () => _showLanguageDialog(context, ref),
               subtitle: Text(isArabic ? 'العربية' : 'English'),
             ),
             ListTile(
@@ -65,7 +98,10 @@ class SettingPage extends ConsumerWidget {
             ),
             ListTile(
               title: Text(tr.translate('logout')),
-              leading: const Icon(Icons.logout),
+              leading: const Icon(Icons.logout, color: Colors.red),
+              onTap: () {
+                // TODO: Implement logout functionality
+              },
             ),
           ],
         ),

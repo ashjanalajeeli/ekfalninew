@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../l10n.dart';
 import '../providers/language_provider.dart';
 import '../providers/auth_provider.dart';
+import 'package:ekfalninew/screens/homepage.dart';
 
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -95,8 +96,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
+          const SnackBar(content: Text('تم تحديث الملف الشخصي بنجاح')),
         );
+
+
+        //  التنقل إلى الصفحة الرئيسية بعد الحفظ
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       if (mounted) {
@@ -117,10 +122,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final tr = AppLocalizations.of(context)!;
 
     return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: isArabic ? TextDirection.ltr: TextDirection.rtl ,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(tr.translate('profile')),
+          title: Text(tr.translate('الملف الشخصي')),
           leading: isArabic ? null : BackButton(),
           actions: [
             if (isArabic) BackButton(),
@@ -167,12 +172,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(
-                    labelText: tr.translate('name'),
+                    labelText: tr.translate('الاسم الكامل'),
                     prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return tr.translate('name_required');
+                      return tr.translate('الاسم مطلوب');
                     }
                     return null;
                   },
@@ -181,34 +186,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: tr.translate('email'),
+                    labelText: tr.translate('البريد الإلكتروني'),
                     prefixIcon: const Icon(Icons.email),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return tr.translate('email_required');
+                      return tr.translate('البريد الإلكتروني مطلوب');
                     }
                     if (!value.contains('@')) {
-                      return tr.translate('invalid_email');
+                      return tr.translate('يرجى إدخال بريد إلكتروني صحيح');
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 24),
                 ExpansionTile(
-                  title: Text(tr.translate('change_password')),
+                  title: Text(tr.translate('تغيير كلمة المرور')),
                   children: [
                     TextFormField(
                       controller: _currentPasswordController,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
-                        labelText: tr.translate('current_password'),
+                        labelText: tr.translate('كلمة المرور الحالية'),
                         prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _showPassword
                                 ? Icons.visibility
-                                : Icons.visibility_off,
+                                 : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() => _showPassword = !_showPassword);
@@ -221,13 +226,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       controller: _newPasswordController,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
-                        labelText: tr.translate('new_password'),
+                        labelText: tr.translate('كلمة المرور الجديدة'),
                         prefixIcon: const Icon(Icons.lock_outline),
                       ),
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
                           if (value.length < 6) {
-                            return tr.translate('password_too_short');
+                            return tr.translate('يجب أن تكون كلمة المرور 6 أحرف على الأقل');
                           }
                         }
                         return null;
@@ -238,13 +243,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       controller: _confirmPasswordController,
                       obscureText: !_showPassword,
                       decoration: InputDecoration(
-                        labelText: tr.translate('confirm_password'),
+                        labelText: tr.translate('تأكيد كلمة المرور'),
                         prefixIcon: const Icon(Icons.lock_outline),
                       ),
                       validator: (value) {
                         if (_newPasswordController.text.isNotEmpty &&
                             value != _newPasswordController.text) {
-                          return tr.translate('passwords_dont_match');
+                          return tr.translate('كلمات المرور غير متطابقة');
                         }
                         return null;
                       },
@@ -259,7 +264,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator()
-                      : Text(tr.translate('save_changes')),
+                      : Text(tr.translate('حفظ التغييرات')),
                 ),
               ],
             ),

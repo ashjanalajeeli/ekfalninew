@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ekfalninew/features/donation/providers/donation_provider.dart';
 
-class CreditCardPage extends StatefulWidget {
+class CreditCardPage extends ConsumerStatefulWidget {
   const CreditCardPage({super.key});
 
   @override
-  State<CreditCardPage> createState() => _CreditCardPageState();
+  ConsumerState<CreditCardPage> createState() => _CreditCardPageState();
 }
 
-class _CreditCardPageState extends State<CreditCardPage> {
+class _CreditCardPageState extends ConsumerState<CreditCardPage> {
   final _cardNumberController = TextEditingController();
   final _nameController = TextEditingController();
   final _expiryDateController = TextEditingController();
@@ -17,11 +19,24 @@ class _CreditCardPageState extends State<CreditCardPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isCVVHidden = true;
   String _cardType = '';
+  bool _isProcessing = false;
+  String? _amount;
+  String? _donationType;
 
   @override
   void initState() {
     super.initState();
     _cardNumberController.addListener(_detectCardType);
+    // Get amount and donation type from route arguments
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        setState(() {
+          _amount = args['amount'] as String?;
+          _donationType = args['donationType'] as String?;
+        });
+      }
+    });
   }
 
   @override
@@ -78,6 +93,58 @@ class _CreditCardPageState extends State<CreditCardPage> {
       return 'تاريخ غير صالح. استخدم MM/YY';
     }
     return null;
+  }
+
+  Future<void> _processPayment() async {
+    if (!_formKey.currentState!.validate() || _amount == null) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      // Simulate payment processing
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Add donation to register
+      ref.read(donationProvider.notifier).addFinancialDonation(
+        amount: double.parse(_amount!),
+        campaignId: '',
+        paymentMethod: 'بطاقة ائتمان',
+      );
+
+      if (mounted) {
+        // Show success dialog
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('تم الدفع بنجاح'),
+            content: const Text('تم تسجيل تبرعك بنجاح. شكراً لك!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/mydonat', // Navigate to donations register
+                    (route) => false,
+                  );
+                },
+                child: const Text('عرض سجل التبرعات'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في عملية الدفع: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 
   @override
@@ -181,23 +248,26 @@ class _CreditCardPageState extends State<CreditCardPage> {
                   ],
                 ),
                 const SizedBox(height: 30),
+                if (_amount != null)
+                  Text(
+                    'المبلغ: $_amount ريال',
+                    style: Theme.of(context).textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("تم الدفع بنجاح 🎉")),
-                        );
-                      }
-                    },
+                    onPressed: _isProcessing ? null : _processPayment,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       textStyle: const TextStyle(fontSize: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text('إتمام الدفع', style: TextStyle(color: Colors.white)),
+                    child: _isProcessing
+                        ? const CircularProgressIndicator()
+                        : const Text('إتمام الدفع', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],

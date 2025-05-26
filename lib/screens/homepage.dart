@@ -46,7 +46,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final isTablet = size.width > 600;
 
     return Directionality(
-      textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: isArabic ? TextDirection. ltr: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.background,
         appBar: AppBar(
@@ -58,7 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           backgroundColor: Colors.teal,
           elevation: 0,
         ),
-        endDrawer: const drawer(),
+        drawer: const drawer(),
         floatingActionButton: _showFloatingButton
             ? FloatingActionButton(
                 onPressed: () {
@@ -95,7 +95,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     if (index == 0) {
                       return _buildProjectCard(
                         context: context,
-                        title: tr.translate('school_bags'),
+                        title: tr.translate('أدوات مدرسية'),
                         currentAmount: '10,000',
                         targetAmount: '200,000',
                         imagePath: 'images/backpack.png',
@@ -106,7 +106,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     } else if (index == 1) {
                       return _buildProjectCard(
                         context: context,
-                        title: tr.translate('clothes'),
+                        title: tr.translate('ملابس'),
                         currentAmount: '5,000',
                         targetAmount: '100,000',
                         imagePath: 'images/cloths.png',
@@ -117,7 +117,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     } else {
                       return _buildSponsorshipCard(
                         context: context,
-                        title: tr.translate('orphan_sponsorship'),
+                        title: tr.translate('كفالة يتيم'),
                         imagePath: 'images/orphan.jpg',
                       ).animate()
                         .fadeIn(delay: 600.ms)
@@ -172,7 +172,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.translate('featured_project'),
+                  AppLocalizations.of(context)!.translate('مشروع مميز'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -181,7 +181,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  AppLocalizations.of(context)!.translate('featured_description'),
+                  AppLocalizations.of(context)!.translate('ساعدنا في إحداث فرق في حياة شخص ما اليوم'),
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
@@ -206,7 +206,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: Text(AppLocalizations.of(context)!.translate('donate_now')),
+                  child: Text(AppLocalizations.of(context)!.translate('تبرع الان')),
                 ),
               ],
             ),
@@ -333,7 +333,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(context, 'orphandetails');
+              Navigator.pushNamed(context, 'sponserchild');
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +377,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, 'orphandetails');
+                            Navigator.pushNamed(context, 'sponserchild');
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -391,7 +391,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ),
                           child: Text(
-                            AppLocalizations.of(context)!.translate('sponsor_now'),
+                            AppLocalizations.of(context)!.translate('اكفل الآن'),
                           ),
                         ),
                       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ekfalninew/features/donation/providers/donation_provider.dart';
 
 class MyDonationsScreen extends ConsumerStatefulWidget {
   const MyDonationsScreen({super.key});
@@ -17,6 +18,10 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_scrollListener);
+    // Load donations when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(donationProvider.notifier).loadDonations();
+    });
   }
 
   @override
@@ -43,14 +48,17 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch donations to auto-refresh when they change
+    final donations = ref.watch(donationProvider);
+    
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('ملف الكفيل'),
+        title: const Text('سجل التبرعات'),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 2,
@@ -64,8 +72,8 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
           : null,
       body: RefreshIndicator(
         onRefresh: () async {
-          // TODO: Implement refresh logic
-          await Future.delayed(const Duration(seconds: 1));
+          // Implement refresh logic
+          await ref.read(donationProvider.notifier).loadDonations();
         },
         child: CustomScrollView(
           controller: _scrollController,
@@ -88,18 +96,21 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final donation = _getDonations()[index];
+                    final donation = donations[index];
                     return DonationCard(
-                      title: donation['title']!,
-                      date: donation['date']!,
-                      amount: donation['amount']!,
+                      title: donation.title,
+                      date: donation.date,
+                      amount: donation.amount.toString(),
+                      type: donation.type,
+                      status: donation.status,
+                      details: donation.details,
                       index: index,
                     ).animate().fadeIn(
-                          delay: Duration(milliseconds: 100 * index),
-                          duration: const Duration(milliseconds: 500),
-                        );
+                      delay: Duration(milliseconds: 100 * index),
+                      duration: const Duration(milliseconds: 500),
+                    );
                   },
-                  childCount: _getDonations().length,
+                  childCount: donations.length,
                 ),
               ),
             ),
@@ -140,21 +151,21 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
               ),
           const SizedBox(height: 16),
           Text(
-            'مارتا كارلسون',
+            'ashjan alajeeli',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ).animate().fadeIn(delay: 200.ms),
           const SizedBox(height: 8),
           Text(
-            'سان خوسيه، كاليفورنيا',
+            'حضرموت، اليمن',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ).animate().fadeIn(delay: 300.ms),
           const SizedBox(height: 4),
           Text(
-            'انضم منذ 2019',
+            'انضم منذ 2025',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -193,7 +204,7 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
           ),
           const SizedBox(width: 8),
           Text(
-            'كفيل',
+            'متبرع',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -260,29 +271,24 @@ class _MyDonationsScreenState extends ConsumerState<MyDonationsScreen> {
       ),
     );
   }
-
-  List<Map<String, String>> _getDonations() {
-    return [
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 مارس، 2022', 'amount': '\$100'},
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 فبراير، 2022', 'amount': '\$100'},
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 يناير، 2022', 'amount': '\$100'},
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 ديسمبر، 2021', 'amount': '\$100'},
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 نوفمبر، 2021', 'amount': '\$100'},
-      {'title': 'مستشفى أبحاث الأطفال', 'date': '28 أكتوبر، 2021', 'amount': '\$100'},
-    ];
-  }
 }
 
 class DonationCard extends StatelessWidget {
   final String title;
   final String date;
   final String amount;
+  final String type;
+  final String status;
+  final String? details;
   final int index;
 
   const DonationCard({
     required this.title,
     required this.date,
     required this.amount,
+    required this.type,
+    required this.status,
+    this.details,
     required this.index,
     super.key,
   });
@@ -300,7 +306,38 @@ class DonationCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to donation details
+          // Show donation details in a dialog
+          if (details != null) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(title),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('التاريخ: $date'),
+                    const SizedBox(height: 8),
+                    Text('المبلغ: $amount'),
+                    const SizedBox(height: 8),
+                    Text('النوع: $type'),
+                    const SizedBox(height: 8),
+                    Text('الحالة: $status'),
+                    if (details != null) ...[
+                      const SizedBox(height: 8),
+                      Text('التفاصيل: $details'),
+                    ],
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('إغلاق'),
+                  ),
+                ],
+              ),
+            );
+          }
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -315,7 +352,7 @@ class DonationCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  Icons.favorite,
+                  type == 'نقدي' ? Icons.attach_money : Icons.card_giftcard,
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
@@ -327,15 +364,40 @@ class DonationCard extends StatelessWidget {
                     Text(
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       date,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Text(
+                            status,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                        if (details != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
@@ -343,9 +405,9 @@ class DonationCard extends StatelessWidget {
               Text(
                 amount,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),

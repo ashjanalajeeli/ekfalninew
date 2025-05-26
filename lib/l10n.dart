@@ -65,7 +65,7 @@ class AppLocalizations {
       'passwords_dont_match': 'كلمات المرور غير متطابقة',
       // Home screen translations
       'home': 'الصفحة الرئيسية',
-      'featured_project': 'المشروع المميز',
+      'featured_project': 'مشروع مميز',
       'featured_description': 'ساعدنا في إحداث فرق في حياة شخص ما اليوم',
       'donate_now': 'تبرع الآن',
       'sponsor_now': 'اكفل الآن',

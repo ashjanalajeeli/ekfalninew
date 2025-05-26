@@ -6,7 +6,24 @@ part of 'donation_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$donationListHash() => r'369f2d025357ea6a64629a443aaaf30c630e7dad';
+String _$donationServiceHash() => r'c52922de535a5c177cd1fa3ad45c8bb4e7a16f58';
+
+/// See also [donationService].
+@ProviderFor(donationService)
+final donationServiceProvider = AutoDisposeProvider<DonationService>.internal(
+  donationService,
+  name: r'donationServiceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$donationServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DonationServiceRef = AutoDisposeProviderRef<DonationService>;
+String _$donationListHash() => r'93e5f51731d69f64f56af1f3eebd4310916f2617';
 
 /// See also [DonationList].
 @ProviderFor(DonationList)
@@ -21,7 +38,7 @@ final donationListProvider =
 );
 
 typedef _$DonationList = AutoDisposeAsyncNotifier<List<Donation>>;
-String _$userDonationsHash() => r'ffb54ffbcd712b4a8d1dcf7f91acb99b9c4106fe';
+String _$userDonationsHash() => r'4bda359fa6a681f31776690b2aeaa2088d9e2aa3';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -188,7 +205,7 @@ class _UserDonationsProviderElement
   String get userId => (origin as UserDonationsProvider).userId;
 }
 
-String _$categoryDonationsHash() => r'5516cc4c583734ce6011fd054b8dabc630ef734d';
+String _$categoryDonationsHash() => r'47d86b8369617bdb06d0edcaf16c9a40be8a4d05';
 
 abstract class _$CategoryDonations
     extends BuildlessAutoDisposeAsyncNotifier<List<Donation>> {
@@ -336,7 +353,7 @@ class _CategoryDonationsProviderElement
 }
 
 String _$donationStatisticsHash() =>
-    r'fa794f02f1f630225423c892b1c47dbd741600bf';
+    r'31ef9ac1f12d8bd8fabc36573c1c4926a0f3d65a';
 
 /// See also [DonationStatistics].
 @ProviderFor(DonationStatistics)

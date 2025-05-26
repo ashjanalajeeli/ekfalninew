@@ -74,7 +74,7 @@ class _BankTransferPageState extends State<BankTransferPage> {
                       ListTile(
                         leading: Icon(Icons.account_balance, color: Colors.teal),
                         title: Text('اسم البنك'),
-                        subtitle: Text('البنك الأهلي السعودي'),
+                        subtitle: Text('بنك حضرموت'),
                       ),
                       Divider(),
                       ListTile(
@@ -106,7 +106,7 @@ class _BankTransferPageState extends State<BankTransferPage> {
               const SizedBox(height: 10),
               Center(
                 child: Text(
-                  'donate@charity.org',
+                  'ekfalni@gmail.com',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
