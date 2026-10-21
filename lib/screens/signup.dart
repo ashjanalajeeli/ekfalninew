@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../navigation/main_navigation.dart';
 import '../providers/auth_provider.dart';
+import '../theme/app_theme.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
@@ -96,7 +97,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Icons.volunteer_activism, color: Colors.teal, size: 55),
+                  Icon(Icons.volunteer_activism, color: AppTheme.secondaryColor, size: 55),
                   SizedBox(height: 10),
                   Text(
                     'Donate Now',
@@ -147,7 +148,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       const SizedBox(height: 5),
                       const Align(
                         alignment: Alignment.centerRight,
-                        child: Icon(Icons.favorite, color: Colors.teal),
+                        child: Icon(Icons.favorite, color: AppTheme.primaryColor),
                       ),
                       const SizedBox(height: 10),
                       _buildInputField(
@@ -177,7 +178,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                             final authState = ref.watch(authProvider);
                             return ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
+                                backgroundColor: AppTheme.primaryColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
                                 ),

@@ -9,13 +9,13 @@ import 'providers/theme_provider.dart';
 import 'providers/language_provider.dart';
 import 'theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '';
 
 // Core screens
 import 'package:ekfalninew/screens/splash.dart';
 import 'screens/login.dart';
 import 'screens/signup.dart';
 import 'screens/homepage.dart';
+import 'screens/profile.dart';
 import 'drawer/setting.dart';
 
 // Navigation and common
@@ -185,6 +185,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/signup': (context) => SignUpPage(),
         '/main_nivigation': (context) => MainNavigation(),
         '/home': (context) => HomePage(),
+        '/profile': (context) => const ProfileScreen(),
         '/customdrawer': (context) => drawer(),
         '/helppage': (context) => HelpPage(),
 

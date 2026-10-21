@@ -185,7 +185,7 @@ class _donationState extends ConsumerState<donation> {
                   Navigator.pushNamed(context, '/mydonat');
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.teal),
+                  side: const BorderSide(color: AppTheme.primaryColor),
                   backgroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -194,7 +194,7 @@ class _donationState extends ConsumerState<donation> {
                 child: const Text(
                   'سجل التبرعات',
                   style: TextStyle(
-                    color: Colors.teal,
+                    color: AppTheme.primaryColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -351,7 +351,7 @@ class _donationState extends ConsumerState<donation> {
         );
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.teal : Colors.white,
+        backgroundColor: isSelected ? AppTheme.primaryColor : Colors.white,
         foregroundColor: isSelected ? Colors.white : Colors.black,
         side: const BorderSide(color: Colors.black),
         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -445,13 +445,13 @@ class _donationState extends ConsumerState<donation> {
           Icon(
             icon,
             size: 30,
-            color: Colors.teal, //  لون دائم
+            color: AppTheme.primaryColor, // لون دائم
           ),
           const SizedBox(height: 5),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.teal : Colors.black,
+              color: isSelected ? AppTheme.primaryColor : Colors.black,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'help.dart';
 import 'setting.dart';
+import '../theme/app_theme.dart';
 
 class drawer extends StatefulWidget {
   const drawer({super.key});
@@ -56,7 +57,7 @@ class _drawerState extends State<drawer> {
   void _showImageOptions() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+          backgroundColor: AppTheme.backgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -64,7 +65,7 @@ class _drawerState extends State<drawer> {
         return Wrap(
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.teal),
+              leading: const Icon(Icons.photo_library, color: AppTheme.primaryColor),
               title: const Text('اختيار صورة'),
               onTap: () {
                 Navigator.pop(context);
@@ -112,7 +113,7 @@ class _drawerState extends State<drawer> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               UserAccountsDrawerHeader(
-                decoration: const BoxDecoration(color: Colors.teal),
+                decoration: const BoxDecoration(gradient: AppTheme.primaryGradient),
                 accountName: Text(
                   username,
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -170,7 +171,7 @@ class _drawerState extends State<drawer> {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: Colors.teal),
+      leading: Icon(icon, color: AppTheme.primaryColor),
       title: Align(
         alignment: Alignment.centerRight,
         child: Text(
@@ -178,7 +179,7 @@ class _drawerState extends State<drawer> {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+          color: AppTheme.textColor,
           ),
         ),
       ),

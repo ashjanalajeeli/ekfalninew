@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'AssociationProjects.dart';
 import 'AssociationModel.dart';
 import 'package:ekfalninew/drawer/CustomDrawer.dart';
+import 'package:ekfalninew/theme/app_theme.dart';
 
 class Association extends StatelessWidget {
   final List<AssociationModel> associations = [
@@ -42,7 +43,7 @@ class Association extends StatelessWidget {
       appBar: AppBar(
         title: const Text('الجمعيات', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: Colors.teal,
+        backgroundColor: AppTheme.primaryColor,
       ),
 
       endDrawer: const drawer(),
@@ -134,7 +135,7 @@ class IconInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: Colors.teal),
+        Icon(icon, size: 18, color: AppTheme.primaryColor),
         const SizedBox(width: 6),
         Text(text, style: const TextStyle(fontSize: 13)),
       ],

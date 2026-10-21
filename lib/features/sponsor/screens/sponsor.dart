@@ -4,6 +4,7 @@ import 'mysponsor.dart'; // صفحة كفالاتي
 import 'sponsorship.dart'; // صفحة الكفالة الرئيسية
 import 'sponserchild.dart';
 import 'package:ekfalninew/drawer/CustomDrawer.dart';
+import 'package:ekfalninew/theme/app_theme.dart';
 
 class sponsor extends StatelessWidget {
   const sponsor({super.key});
@@ -13,9 +14,9 @@ class sponsor extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundColor,
         appBar: AppBar(
-          backgroundColor:  Colors.teal,
+          backgroundColor: AppTheme.primaryColor,
           title: const Text('كفالة',style: TextStyle(color: Colors.white),),
           centerTitle: true,
           elevation: 0,
@@ -57,17 +58,17 @@ class sponsor extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         elevation: 2,
-        color: Colors.pink.shade50,
+        color: AppTheme.cardColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.teal.shade100,
+                color: AppTheme.softPurple,
                 shape: BoxShape.circle,
               ),
               padding: const EdgeInsets.all(16),
-              child: Icon(icon, size: 40, color: Colors.teal),
+              child: Icon(icon, size: 40, color: AppTheme.primaryColor),
             ),
             const SizedBox(height: 12),
             Text(
@@ -75,7 +76,7 @@ class sponsor extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: AppTheme.primaryColor,
               ),
             ),
           ],
