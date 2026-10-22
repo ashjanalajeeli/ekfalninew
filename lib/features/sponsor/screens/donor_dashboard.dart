@@ -18,7 +18,10 @@ class DonorDashboardScreen extends StatelessWidget {
           elevation: 0,
           title: Text('لوحة المتبرع', style: GoogleFonts.cairo(fontSize: 17, fontWeight: FontWeight.w800)),
           centerTitle: true,
-          actions: [IconButton(onPressed: () => _showNotifications(context), icon: const Icon(Icons.notifications_none_rounded))],
+          actions: [
+            IconButton(onPressed: () => Navigator.pushNamed(context, '/notification-settings'), icon: const Icon(Icons.tune_rounded)),
+            IconButton(onPressed: () => Navigator.pushNamed(context, '/notification-center'), icon: const Icon(Icons.notifications_none_rounded)),
+          ],
         ),
         body: RefreshIndicator(
           color: AppTheme.primaryColor,
@@ -92,5 +95,4 @@ class DonorDashboardScreen extends StatelessWidget {
   Widget _sectionHeader(String title, String action) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: AppTheme.subheadingStyle.copyWith(fontSize: 16)), if (action.isNotEmpty) TextButton(onPressed: () {}, child: Text(action, style: GoogleFonts.cairo(color: AppTheme.primaryColor, fontSize: 10, fontWeight: FontWeight.w700)))]);
 
   void _showReport(BuildContext context, String title, String subtitle) => showModalBottomSheet(context: context, showDragHandle: true, backgroundColor: AppTheme.backgroundColor, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(26))), builder: (_) => Padding(padding: const EdgeInsets.fromLTRB(22, 5, 22, 30), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: AppTheme.subheadingStyle), const SizedBox(height: 7), Text(subtitle, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 11)), const SizedBox(height: 18), Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: AppTheme.softPurple, borderRadius: BorderRadius.circular(16)), child: Text('تمت إضافة هذا التحديث إلى سجل أثرِك. ستظهر التفاصيل والصور الكاملة هنا بعد مزامنة التقرير من الجمعية الشريكة.', style: GoogleFonts.cairo(color: AppTheme.textColor, fontSize: 11, height: 1.7))), const SizedBox(height: 16), SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(context), style: AppTheme.elevatedButtonStyle, child: Text('حسنًا', style: AppTheme.buttonTextStyle)))])));
-  void _showNotifications(BuildContext context) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('لديك تقرير جديد من جمعية كافل اليتيم')));
 }
