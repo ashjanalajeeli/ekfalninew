@@ -41,6 +41,7 @@ import 'features/sponsor/screens/sponsorshipconfirmation.dart';
 import 'features/sponsor/screens/mysponsor.dart';
 import 'features/sponsor/screens/sponserchild.dart';
 import 'features/sponsor/screens/orphan_details.dart';
+import 'features/sponsor/screens/donor_dashboard.dart';
 
 import 'features/association/screens/association.dart';
 import 'features/association/screens/AssociationProjects.dart';
@@ -188,6 +189,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/main_nivigation': (context) => MainNavigation(),
         '/home': (context) => HomePage(),
         '/profile': (context) => const ProfileScreen(),
+        '/donor-dashboard': (context) => const DonorDashboardScreen(),
         '/customdrawer': (context) => drawer(),
         '/helppage': (context) => HelpPage(),
 
