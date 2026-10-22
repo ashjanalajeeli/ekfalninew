@@ -8,6 +8,7 @@ class User {
   final String fullName;
   final String password;
   final String? profileImage;
+  final String role;
 
   const User({
     required this.id,
@@ -15,7 +16,8 @@ class User {
     required this.name,
     required this.fullName,
     required this.password,
-    this.profileImage, String? photoUrl,
+    this.profileImage,
+    this.role = 'donor',
 
   });
 
@@ -26,6 +28,7 @@ class User {
     String? fullName,
     String? password,
     String? profileImage,
+    String? role,
   }) {
     return User(
       id: id ?? this.id,
@@ -34,6 +37,7 @@ class User {
       fullName: fullName ?? this.fullName,
       password: password ?? this.password,
       profileImage: profileImage ?? this.profileImage,
+      role: role ?? this.role,
     );
   }
 
@@ -45,6 +49,7 @@ class User {
       'name': name,
       'fullName': fullName,
       'profileImage': profileImage,
+      'role': role,
     };
   }
 
@@ -56,6 +61,9 @@ class User {
       fullName: json['fullName'] as String,
       password: json['password'],
       profileImage: json['profileImage'] as String?,
+      role: json['role'] as String? ?? 'donor',
     );
   }
-} 
+
+  bool get isAdmin => role == 'admin' || role == 'supervisor';
+}

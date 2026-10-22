@@ -52,7 +52,12 @@ class AuthRepository {
         },
       );
 
-      return User.fromJson(response.data['user']);
+      final user = User.fromJson(response.data['user']);
+      final token = response.data['token'] as String?;
+      if (token != null) await _apiService.setToken(token);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userKey, jsonEncode(user.toJson()));
+      return user;
     } on DioException catch (e) {
       throw _handleAuthError(e);
     }
@@ -82,7 +87,10 @@ class AuthRepository {
   Future<User> getProfile() async {
     try {
       final response = await _apiService.get(ApiConfig.profile);
-      return User.fromJson(response.data['user']);
+      final user = User.fromJson(response.data['user']);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userKey, jsonEncode(user.toJson()));
+      return user;
     } on DioException catch (e) {
       throw _handleAuthError(e);
     }
@@ -109,6 +117,7 @@ class AuthRepository {
   Future<void> signOut() async {
     try {
       await SharedPreferences.getInstance().then((prefs) => prefs.remove(_userKey));
+      await _apiService.clearToken();
     } catch (e) {
       throw Exception('حدث خطأ في تسجيل الخروج');
     }
