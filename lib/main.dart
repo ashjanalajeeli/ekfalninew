@@ -33,6 +33,7 @@ import 'features/donation/screens/donation_form.dart';
 import 'features/donation/screens/donation_list_screen.dart';
 import 'features/donation/screens/donation_cart.dart';
 import 'features/donation/screens/donation_statistics_widget.dart';
+import 'features/donation/screens/financial_history.dart';
 
 import 'features/sponsor/screens/sponsor.dart';
 import 'features/sponsor/screens/orphansponsorship.dart';
@@ -44,6 +45,7 @@ import 'features/sponsor/screens/orphan_details.dart';
 import 'features/sponsor/screens/donor_dashboard.dart';
 import 'features/sponsor/screens/notification_center.dart';
 import 'features/sponsor/screens/notification_settings.dart';
+import 'features/sponsor/screens/report_detail.dart';
 
 import 'features/association/screens/association.dart';
 import 'features/association/screens/AssociationProjects.dart';
@@ -205,6 +207,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/clothesdonation': (context) => DonationClothesScreen(),
         '/DonationFormScreen':(context) => DonationFormScreen(),
         '/donation-cart': (context) => const DonationCartScreen(),
+        '/financial-history': (context) => const FinancialHistoryScreen(),
 
         // الكفالة
         '/sponsor': (context) => sponsor(),
@@ -212,6 +215,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/sposership': (context) => sponsorship(),
         '/sponserchild': (context) => sponsorchild(),
         '/orphan-details': (context) => const OrphanDetailsScreen(),
+        '/report-detail': (context) => const ReportDetailScreen(),
         '/mysponsor': (context) => mysponsor(),
         '/sponsorshipconfirmation': (context) => const SponsorshipConfirmation(
           orphanName: '',
