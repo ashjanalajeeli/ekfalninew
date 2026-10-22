@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_theme.dart';
+
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  final List<_ReportReview> _reviews = [
+    _ReportReview('أحمد محمد', 'تقرير مارس 2026', 'منذ ساعتين', '92%', 'مراجعة مطلوبة', 'images/child1.jpg'),
+    _ReportReview('سارة عبدالله', 'تقرير فبراير 2026', 'منذ 5 ساعات', '82%', 'مراجعة مطلوبة', 'images/child2.jpg'),
+    _ReportReview('ليان خالد', 'تقرير مارس 2026', 'أمس', '54%', 'تعديلات مطلوبة', 'images/orphan.jpg'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final pending = _reviews.where((item) => item.status == 'مراجعة مطلوبة').length;
+    return Directionality(textDirection: TextDirection.rtl, child: Scaffold(backgroundColor: AppTheme.backgroundColor, appBar: AppBar(backgroundColor: AppTheme.backgroundColor, foregroundColor: AppTheme.textColor, surfaceTintColor: Colors.transparent, elevation: 0, centerTitle: true, title: Text('إدارة الأيتام', style: GoogleFonts.cairo(fontSize: 17, fontWeight: FontWeight.w800)), actions: [IconButton(onPressed: () => _showMessage('تم تحديث قائمة المراجعة'), icon: const Icon(Icons.refresh_rounded))]), body: ListView(padding: const EdgeInsets.fromLTRB(20, 5, 20, 34), children: [Text('مرحبًا أيها المشرف،', style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 11)), Text('مراجعة واعتماد التقارير', style: AppTheme.headingStyle.copyWith(fontSize: 22)), const SizedBox(height: 17), _overview(pending), const SizedBox(height: 23), _sectionHeader('تقارير بانتظار الإجراء', '$pending قيد المراجعة'), const SizedBox(height: 11), ..._reviews.map(_reviewCard), const SizedBox(height: 24), _sectionHeader('تطور حالة الأيتام', 'آخر 6 أشهر'), const SizedBox(height: 11), _orphanProgressChart(), const SizedBox(height: 24), _sectionHeader('التحليل المالي للمتبرعين', 'تفاصيل'), const SizedBox(height: 11), _financialAnalytics(), const SizedBox(height: 22), _insightCard() ]));
+  }
+
+  Widget _overview(int pending) => Row(children: [_kpi('$pending', 'تقارير بانتظارك', Icons.rate_review_rounded, AppTheme.softPurple, AppTheme.primaryColor), const SizedBox(width: 9), _kpi('128', 'أيتام نشطون', Icons.groups_rounded, const Color(0xFFE5F6F0), AppTheme.successColor), const SizedBox(width: 9), _kpi('94%', 'نسبة الاعتماد', Icons.verified_rounded, AppTheme.softGold, const Color(0xFFC18320))]);
+  Widget _kpi(String value, String label, IconData icon, Color bg, Color color) => Expanded(child: Container(padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 5), decoration: AppTheme.cardDecoration, child: Column(children: [Container(width: 34, height: 34, decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(11)), child: Icon(icon, color: color, size: 18)), const SizedBox(height: 7), Text(value, style: GoogleFonts.cairo(color: AppTheme.textColor, fontWeight: FontWeight.w800, fontSize: 16)), Text(label, textAlign: TextAlign.center, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 8))]));
+  Widget _sectionHeader(String title, String action) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(title, style: AppTheme.subheadingStyle.copyWith(fontSize: 16)), Text(action, style: GoogleFonts.cairo(color: AppTheme.primaryColor, fontSize: 9, fontWeight: FontWeight.w700))]);
+
+  Widget _reviewCard(_ReportReview review) => Container(margin: const EdgeInsets.only(bottom: 11), padding: const EdgeInsets.all(12), decoration: AppTheme.cardDecoration, child: Column(children: [Row(children: [ClipRRect(borderRadius: BorderRadius.circular(13), child: Image.asset(review.image, width: 50, height: 50, fit: BoxFit.cover)), const SizedBox(width: 10), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(review.name, style: GoogleFonts.cairo(color: AppTheme.textColor, fontSize: 12, fontWeight: FontWeight.w800)), const SizedBox(height: 3), Text(review.report, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 9)), const SizedBox(height: 4), Row(children: [Text(review.date, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 8)), const SizedBox(width: 8), _tag(review.status)])), Text(review.progress, style: GoogleFonts.cairo(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w800))]), const SizedBox(height: 11), Row(children: [Expanded(child: OutlinedButton.icon(onPressed: () => Navigator.pushNamed(context, '/report-detail'), icon: const Icon(Icons.visibility_outlined, size: 16), label: Text('عرض التقرير', style: GoogleFonts.cairo(fontSize: 9, fontWeight: FontWeight.w700)), style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primaryColor, side: const BorderSide(color: AppTheme.primaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11))))), const SizedBox(width: 8), Expanded(child: ElevatedButton.icon(onPressed: review.status == 'معتمد' ? null : () => _reviewAction(review, true), icon: const Icon(Icons.check_rounded, size: 16), label: Text('اعتماد', style: GoogleFonts.cairo(fontSize: 9, fontWeight: FontWeight.w700)), style: AppTheme.elevatedButtonStyle)), const SizedBox(width: 8), IconButton(onPressed: () => _reviewAction(review, false), icon: const Icon(Icons.edit_note_rounded, color: Color(0xFFC18320)), tooltip: 'طلب تعديل')]) ]));
+  Widget _tag(String status) { final color = status == 'مراجعة مطلوبة' ? AppTheme.primaryColor : status == 'معتمد' ? AppTheme.successColor : const Color(0xFFC18320); return Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: color.withOpacity(.11), borderRadius: BorderRadius.circular(6)), child: Text(status, style: GoogleFonts.cairo(color: color, fontSize: 7, fontWeight: FontWeight.w700))); }
+
+  Widget _orphanProgressChart() => Container(padding: const EdgeInsets.fromLTRB(14, 17, 14, 12), decoration: AppTheme.cardDecoration, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('المؤشر العام لتطور الحالات', style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 10)), const SizedBox(height: 13), SizedBox(height: 150, child: CustomPaint(painter: _ProgressChartPainter())), const SizedBox(height: 5), Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: ['أكتوبر', 'نوفمبر', 'ديسمبر', 'يناير', 'فبراير', 'مارس'].map((month) => Text(month, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 7))).toList()), const SizedBox(height: 12), Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(width: 7, height: 7, decoration: const BoxDecoration(color: AppTheme.primaryColor, shape: BoxShape.circle)), const SizedBox(width: 5), Text('مؤشر الاستقرار والتقدم', style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 9))]) ]));
+
+  Widget _financialAnalytics() => Container(padding: const EdgeInsets.all(15), decoration: AppTheme.cardDecoration, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('المساهمات الشهرية', style: GoogleFonts.cairo(color: AppTheme.textColor, fontSize: 11, fontWeight: FontWeight.w800)), Text('8,950 ر.س إجمالي', style: GoogleFonts.cairo(color: AppTheme.primaryColor, fontSize: 10, fontWeight: FontWeight.w800))]), const SizedBox(height: 16), SizedBox(height: 130, child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.spaceAround, children: [_bar('أكتوبر', .55), _bar('نوفمبر', .7), _bar('ديسمبر', .48), _bar('يناير', .82), _bar('فبراير', .66), _bar('مارس', .91)])), const SizedBox(height: 13), Row(children: [Expanded(child: _donutMetric('87%', 'عمليات ناجحة', AppTheme.successColor)), const SizedBox(width: 8), Expanded(child: _donutMetric('13%', 'قيد المراجعة', const Color(0xFFC18320)))]) ]));
+  Widget _bar(String label, double value) => Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [Expanded(child: Align(alignment: Alignment.bottomCenter, child: Container(width: 20, height: 105 * value, decoration: BoxDecoration(gradient: AppTheme.primaryGradient, borderRadius: const BorderRadius.vertical(top: Radius.circular(7))))), const SizedBox(height: 5), Text(label, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 7))]));
+  Widget _donutMetric(String value, String label, Color color) => Row(children: [SizedBox(width: 34, height: 34, child: CircularProgressIndicator(value: value == '87%' ? .87 : .13, strokeWidth: 5, backgroundColor: color.withOpacity(.14), color: color)), const SizedBox(width: 7), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(value, style: GoogleFonts.cairo(color: color, fontSize: 11, fontWeight: FontWeight.w800)), Text(label, style: GoogleFonts.cairo(color: AppTheme.subtitleColor, fontSize: 8))])]);
+  Widget _insightCard() => Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: AppTheme.softPurple, borderRadius: BorderRadius.circular(18)), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.insights_rounded, color: AppTheme.primaryColor, size: 22), const SizedBox(width: 9), Expanded(child: Text('ملاحظة تحليلية: ارتفع متوسط التقدم الدراسي 12% خلال آخر ثلاثة أشهر، بينما تحتاج التقارير الصحية إلى تحديث أسرع في حالتين.', style: GoogleFonts.cairo(color: AppTheme.textColor, fontSize: 10, height: 1.7)))]));
+
+  void _reviewAction(_ReportReview review, bool approve) { setState(() => review.status = approve ? 'معتمد' : 'تعديلات مطلوبة'); _showMessage(approve ? 'تم اعتماد تقرير ${review.name}' : 'تم إرسال طلب تعديل إلى الجمعية'); }
+  void _showMessage(String message) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message, style: GoogleFonts.cairo()), behavior: SnackBarBehavior.floating));
+}
+
+class _ReportReview { final String name, report, date, progress, image; String status; _ReportReview(this.name, this.report, this.date, this.progress, this.status, this.image); }
+
+class _ProgressChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final grid = Paint()..color = const Color(0xFFE9E8F2)..strokeWidth = 1;
+    for (var i = 1; i < 5; i++) { final y = size.height * i / 5; canvas.drawLine(Offset(0, y), Offset(size.width, y), grid); }
+    final values = [0.43, 0.5, 0.46, 0.62, 0.73, 0.86];
+    final line = Paint()..color = AppTheme.primaryColor..strokeWidth = 3..style = PaintingStyle.stroke..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
+    final fill = Paint()..shader = LinearGradient(colors: [AppTheme.primaryColor.withOpacity(.25), AppTheme.primaryColor.withOpacity(0)]).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    final points = List.generate(values.length, (i) => Offset(size.width * i / (values.length - 1), size.height * (1 - values[i])));
+    final path = Path()..moveTo(points.first.dx, size.height)..lineTo(points.first.dx, points.first.dy);
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (final point in points.skip(1)) { linePath.lineTo(point.dx, point.dy); path.lineTo(point.dx, point.dy); }
+    path..lineTo(points.last.dx, size.height)..close();
+    canvas.drawPath(path, fill); canvas.drawPath(linePath, line);
+    final dot = Paint()..color = Colors.white..style = PaintingStyle.fill; final outline = Paint()..color = AppTheme.primaryColor..style = PaintingStyle.stroke..strokeWidth = 2;
+    for (final point in points) { canvas.drawCircle(point, 5, dot); canvas.drawCircle(point, 5, outline); }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
