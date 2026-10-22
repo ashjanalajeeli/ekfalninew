@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'orphan_details.dart';
 
 class sponsorchild extends StatelessWidget {
   const sponsorchild({super.key});
@@ -149,7 +150,10 @@ class ChildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrphanDetailsScreen())),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.pink.shade50,
         borderRadius: BorderRadius.circular(16),
@@ -183,6 +187,7 @@ class ChildCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

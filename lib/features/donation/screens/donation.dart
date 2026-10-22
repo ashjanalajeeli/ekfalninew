@@ -178,6 +178,11 @@ class _donationState extends ConsumerState<donation> {
             ),
           ),
           actions: [
+            IconButton(
+              onPressed: () => Navigator.pushNamed(context, '/donation-cart'),
+              icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white),
+              tooltip: 'سلة التبرعات',
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: OutlinedButton(

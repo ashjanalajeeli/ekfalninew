@@ -1,83 +1,65 @@
-# Ekfalni - Orphan Sponsorship App
+# Ekfalni — تطبيق ومنصة الكفالة والتبرعات
 
-A Flutter application for managing orphan sponsorships and donations.
+**Ekfalni** ليس مجرد نموذج تبرع؛ هو تجربة رقمية متكاملة تساعد المتبرع على اكتشاف فرص الأثر، اختيار حملة أو مستفيد، تجهيز تبرعاته، ثم متابعة رحلة الكفالة والتحديثات المرتبطة بها.
 
-## Features
+## فكرة المشروع
 
-- Orphan sponsorship management
-- Financial and in-kind donations
-- User profile and donation history
-- Secure payment processing
-- Multi-language support (Arabic/English)
-- Beautiful and modern UI with Material Design 3
+يجمع التطبيق بين الكفالة الفردية والتبرعات المالية والعينية في واجهة واحدة، مع الحفاظ على عرض إنساني ومحترم لملفات المستفيدين. يستطيع المستخدم استعراض الحملات، قراءة تفاصيل المستفيد، اختيار نوع التبرع، مراجعة العناصر في سلة التبرعات، ثم الانتقال إلى خيارات الدفع المتاحة.
 
-## Getting Started
+## الواجهات الرئيسية
 
-### Prerequisites
+- **الرئيسية:** ملخص الأثر الشهري، الحملات التي تحتاج دعمًا، ونقاط الدخول السريعة للتبرع والكفالة.
+- **تفاصيل المستفيد:** قصة المستفيد، نوع الرعاية، الاحتياجات الحالية، نسبة التقدم، ومعلومات الخصوصية قبل بدء الكفالة.
+- **سلة التبرعات:** مراجعة الحملات والعناصر المختارة، تعديلها أو حذفها، ومعرفة الإجمالي قبل إدخال بيانات التبرع.
+- **التبرعات:** التبرع لمرة واحدة أو بشكل شهري، واختيار الفئة أو المشروع.
+- **الكفالة:** اكتشاف فرص الكفالة، قراءة الشروط، متابعة الكفالات الحالية، وتأكيد رحلة الكفيل.
+- **الجمعيات والمشاريع:** استعراض الجهات والمبادرات والمشاريع المرتبطة بها.
+- **الملف الشخصي وسجل التبرعات:** إدارة البيانات الشخصية ومراجعة أثر المستخدم.
 
-- Flutter SDK (latest stable version)
-- Dart SDK (latest stable version)
-- Android Studio / VS Code with Flutter extensions
-- Git
+## التقنية
 
-### Installation
+- Flutter وDart لتطبيقات Android وiOS.
+- Riverpod لإدارة الحالة.
+- Google Fonts وخط Cairo لدعم العربية وواجهة RTL.
+- Firebase وواجهات API بحسب إعداد البيئة.
+- Material 3 مع ثيم Ekfalni البنفسجي والذهبي.
+- دعم التبرعات المالية والعينية، وسجل التبرعات، وخيارات الدفع الموجودة في المشروع.
 
-1. Clone the repository:
+## الهوية وتجربة الاستخدام
+
+تم تحديث التصميم ليعكس شخصية Ekfalni: خلفيات هادئة، بنفسجي موثوق، ذهبي يرمز للأثر، بطاقات مستديرة، مؤشرات تقدم واضحة، وتنقل سفلي سريع بين الرئيسية والتبرعات والكفالة والجمعيات. الواجهات الجديدة مصممة لتكون مفهومة بالعربية ومتجاوبة مع الشاشات المختلفة.
+
+## التشغيل
+
 ```bash
 git clone https://github.com/ashjanalajeeli/ekfalninew.git
-```
-
-2. Navigate to the project directory:
-```bash
 cd ekfalninew
-```
-
-3. Install dependencies:
-```bash
 flutter pub get
-```
-
-4. Run the app:
-```bash
 flutter run
 ```
 
-### Configuration
+> بعض بيانات الواجهات الحالية تجريبية للعرض. يلزم ضبط مفاتيح البيئة وخدمات الخلفية قبل استخدام الدفع أو مزامنة البيانات في الإنتاج.
 
-1. Make sure to update the configuration files with your API keys and endpoints
-2. Update the assets in the `assets` directory as needed
-3. Configure Firebase if you're using Firebase services
+## هيكل مختصر
 
-## Project Structure
-
-```
+```text
 lib/
-├── core/
-│   ├── services/
-│   ├── utils/
-│   └── widgets/
 ├── features/
-│   ├── auth/
-│   ├── donation/
-│   ├── sponsor/
-│   └── profile/
-├── models/
-├── providers/
+│   ├── donation/       # التبرعات وسلة التبرعات
+│   ├── sponsor/        # الكفالة وتفاصيل المستفيد
+│   ├── association/    # الجمعيات والمشاريع
+│   └── payment/        # خيارات الدفع
+├── navigation/         # التنقل الرئيسي
+├── screens/            # البداية، الدخول، الرئيسية، الملف الشخصي
+├── providers/          # الحالة والمصادقة والتبرعات
+├── theme/              # الهوية البصرية والثيم
 └── main.dart
 ```
 
-## Contributing
+## الحالة الحالية
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+الواجهات والتدفقات الأساسية جاهزة للعرض والتطوير، وتشمل صفحة تفاصيل المستفيد وسلة التبرعات. قبل الإطلاق التجاري يجب ربط بيانات المستفيدين والحملات بقاعدة بيانات موثوقة، ومراجعة الخصوصية، واختبار بوابات الدفع على Android وiOS.
 
-## License
+## التواصل
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-Ashjan Alajeeli - [@ashjanalajeeli](https://github.com/ashjanalajeeli)
+Ashjan Alajeeli — [@ashjanalajeeli](https://github.com/ashjanalajeeli)

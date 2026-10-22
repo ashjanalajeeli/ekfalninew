@@ -31,6 +31,7 @@ import 'features/donation/screens/donationschool.dart';
 import 'features/donation/screens/clothesdonation.dart';
 import 'features/donation/screens/donation_form.dart';
 import 'features/donation/screens/donation_list_screen.dart';
+import 'features/donation/screens/donation_cart.dart';
 import 'features/donation/screens/donation_statistics_widget.dart';
 
 import 'features/sponsor/screens/sponsor.dart';
@@ -39,6 +40,7 @@ import 'features/sponsor/screens/sponsorship.dart';
 import 'features/sponsor/screens/sponsorshipconfirmation.dart';
 import 'features/sponsor/screens/mysponsor.dart';
 import 'features/sponsor/screens/sponserchild.dart';
+import 'features/sponsor/screens/orphan_details.dart';
 
 import 'features/association/screens/association.dart';
 import 'features/association/screens/AssociationProjects.dart';
@@ -196,12 +198,14 @@ class _MyAppState extends ConsumerState<MyApp> {
         '/schooldonation': (context) => DonationSchoolScreen(),
         '/clothesdonation': (context) => DonationClothesScreen(),
         '/DonationFormScreen':(context) => DonationFormScreen(),
+        '/donation-cart': (context) => const DonationCartScreen(),
 
         // الكفالة
         '/sponsor': (context) => sponsor(),
         '/orphansponser': (context) => OrphanSponsorshipPage(),
         '/sposership': (context) => sponsorship(),
         '/sponserchild': (context) => sponsorchild(),
+        '/orphan-details': (context) => const OrphanDetailsScreen(),
         '/mysponsor': (context) => mysponsor(),
         '/sponsorshipconfirmation': (context) => const SponsorshipConfirmation(
           orphanName: '',
