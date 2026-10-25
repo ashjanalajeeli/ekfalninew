@@ -75,6 +75,8 @@ lib/
 
 يوجد Backend مستقل داخل [backend](backend/) باستخدام Node.js وExpress وPostgreSQL. يوفر JWT، أدوار `donor` و`charity` و`supervisor` و`admin`، إدارة الجمعيات والمشاريع وطلبات الكفالة، مراجعة التقارير، تصدير Excel/PDF، المدفوعات، وسجل التدقيق والإشعارات داخل التطبيق عبر REST وServer-Sent Events. راجعي [دليل تشغيل الخادم](backend/README.md) لتشغيل PostgreSQL وتطبيق المخططين `001` و`002`.
 
+توجد اختبارات تكامل لمسارات المتبرع والمشرف في [TESTING.md](backend/TESTING.md)، وتعمل تلقائيًا على PostgreSQL 16 مع كل Pull Request أو push إلى `main`. كما يراقب GitHub Actions الثغرات أسبوعيًا، ويستخدم Dependabot لفتح تحديثات دورية للاعتماديات.
+
 ### عقد التنبيهات المقترح للخلفية
 
 ```text

@@ -375,4 +375,8 @@ app.use((error, _req, res, _next) => {
   console.error(error); res.status(500).json({ message: 'Internal server error' });
 });
 
-app.listen(port, () => console.log(`Ekfalni API listening on http://localhost:${port}`));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => console.log(`Ekfalni API listening on http://localhost:${port}`));
+}
+
+export { app, pool };

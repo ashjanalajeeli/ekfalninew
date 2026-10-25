@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '03:40'
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - security
+    versioning-strategy: increase
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      day: monday
+      time: '04:10'
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
