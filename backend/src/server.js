@@ -25,7 +25,7 @@ app.use(express.json({ limit: '2mb' }));
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 const registerSchema = z.object({ email: z.string().email(), password: z.string().min(8), fullName: z.string().min(2) });
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
-const reportSchema = z.object({ orphanId: z.string().uuid(), title: z.string().min(3), summary: z.string().min(5), reportDate: z.string(), metrics: z.record(z.unknown()).optional() });
+const reportSchema = z.object({ orphanId: z.string().uuid(), title: z.string().min(3), summary: z.string().min(5), reportDate: z.string(), metrics: z.record(z.string(), z.unknown()).optional() });
 const charitySchema = z.object({ name: z.string().min(2), licenseNumber: z.string().optional(), phone: z.string().optional(), email: z.string().email().optional() });
 const orphanSchema = z.object({ fullName: z.string().min(2), birthYear: z.number().int().optional(), location: z.string().optional(), story: z.string().optional(), gender: z.string().optional(), healthStatus: z.string().optional(), educationLevel: z.string().optional(), guardianName: z.string().optional(), charityId: z.string().uuid().optional() });
 const projectSchema = z.object({ charityId: z.string().uuid(), name: z.string().min(2), description: z.string().optional(), targetAmount: z.number().nonnegative(), imageUrl: z.string().url().optional() });
