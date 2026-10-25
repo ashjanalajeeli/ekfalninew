@@ -24,6 +24,12 @@ class ApiConfig {
   static const String adminReports = '/admin/sponsorship-reports';
   static const String approveAdminReport = '/admin/sponsorship-reports';
   static const String adminExports = '/admin/exports';
+  static const String charities = '/charities';
+  static const String sponsorshipRequests = '/sponsorship-requests';
+  static const String charityProjects = '/charity/projects';
+  static const String charityCases = '/charity/orphan-cases';
+  static const String payments = '/payments';
+  static const String auditLogs = '/admin/audit-logs';
 
   // Payment endpoints
   static const String createPayment = '/payments/create';

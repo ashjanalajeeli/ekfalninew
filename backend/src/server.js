@@ -26,6 +26,10 @@ const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req,
 const registerSchema = z.object({ email: z.string().email(), password: z.string().min(8), fullName: z.string().min(2) });
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 const reportSchema = z.object({ orphanId: z.string().uuid(), title: z.string().min(3), summary: z.string().min(5), reportDate: z.string(), metrics: z.record(z.unknown()).optional() });
+const charitySchema = z.object({ name: z.string().min(2), licenseNumber: z.string().optional(), phone: z.string().optional(), email: z.string().email().optional() });
+const orphanSchema = z.object({ fullName: z.string().min(2), birthYear: z.number().int().optional(), location: z.string().optional(), story: z.string().optional(), gender: z.string().optional(), healthStatus: z.string().optional(), educationLevel: z.string().optional(), guardianName: z.string().optional(), charityId: z.string().uuid().optional() });
+const projectSchema = z.object({ charityId: z.string().uuid(), name: z.string().min(2), description: z.string().optional(), targetAmount: z.number().nonnegative(), imageUrl: z.string().url().optional() });
+const requestSchema = z.object({ orphanId: z.string().uuid(), monthlyAmount: z.number().positive(), notes: z.string().max(2000).optional() });
 
 function issueToken(user) {
   return jwt.sign({ sub: user.id, role: user.role, email: user.email }, jwtSecret, { expiresIn: '7d' });
@@ -49,6 +53,7 @@ const authenticate = asyncRoute(async (req, res, next) => {
 });
 const requireRole = (...roles) => (req, res, next) => roles.includes(req.user.role) ? next() : res.status(403).json({ message: 'Insufficient permissions' });
 const requireAdmin = requireRole('admin', 'supervisor');
+const requireCharity = requireRole('admin', 'supervisor', 'charity');
 
 function streamFor(userId) {
   if (!events.has(userId)) events.set(userId, new EventEmitter());
@@ -73,6 +78,14 @@ async function notifyReportAudience(report, client = pool) {
   for (const moderator of moderators.rows) {
     await notifyUser(moderator.id, { type: 'report_review', title: 'تقرير جديد بانتظار المراجعة', message: `يوجد تقرير دوري جديد عن ${report.orphan_id} يحتاج إلى اعتمادك.`, entityType: 'sponsorship_report', entityId: report.id });
   }
+}
+async function audit(actorId, action, entityType, entityId, details = {}) {
+  await pool.query(`INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details) VALUES ($1, $2, $3, $4, $5)`, [actorId, action, entityType, entityId || null, JSON.stringify(details)]);
+}
+async function canManageCharity(user, charityId) {
+  if (user.role === 'admin' || user.role === 'supervisor') return true;
+  const result = await pool.query('SELECT 1 FROM charity_members WHERE charity_id = $1 AND user_id = $2', [charityId, user.id]);
+  return Boolean(result.rows[0]);
 }
 
 app.get('/health', asyncRoute(async (_req, res) => {
@@ -159,12 +172,175 @@ app.post('/api/admin/sponsorship-reports/:id/approve', authenticate, requireAdmi
   res.json({ report });
 }));
 
-app.post('/api/sponsorship-reports', authenticate, requireAdmin, asyncRoute(async (req, res) => {
+app.post('/api/sponsorship-reports', authenticate, requireCharity, asyncRoute(async (req, res) => {
   const input = reportSchema.parse(req.body);
+  const orphan = await pool.query('SELECT charity_id FROM orphan_profiles WHERE id = $1', [input.orphanId]);
+  if (!orphan.rows[0] || (req.user.role === 'charity' && !(await canManageCharity(req.user, orphan.rows[0].charity_id)))) return res.status(403).json({ message: 'Not allowed to submit a report for this orphan' });
   const result = await pool.query(`INSERT INTO sponsorship_reports (orphan_id, author_id, title, summary, report_date, metrics)
     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`, [input.orphanId, req.user.id, input.title, input.summary, input.reportDate, JSON.stringify(input.metrics || {})]);
   await notifyReportAudience(result.rows[0]);
   res.status(201).json({ report: result.rows[0] });
+}));
+
+// Charities, projects and orphan management
+app.get('/api/charities', asyncRoute(async (_req, res) => {
+  const result = await pool.query("SELECT id, name, license_number, phone, email FROM charities WHERE status = 'active' ORDER BY name");
+  res.json({ charities: result.rows });
+}));
+app.post('/api/admin/charities', authenticate, requireRole('admin'), asyncRoute(async (req, res) => {
+  const input = charitySchema.parse(req.body);
+  const result = await pool.query(`INSERT INTO charities (name, license_number, phone, email) VALUES ($1, $2, $3, $4) RETURNING *`, [input.name, input.licenseNumber || null, input.phone || null, input.email || null]);
+  await audit(req.user.id, 'create', 'charity', result.rows[0].id, { name: input.name });
+  res.status(201).json({ charity: result.rows[0] });
+}));
+app.patch('/api/admin/charities/:id', authenticate, requireRole('admin'), asyncRoute(async (req, res) => {
+  const input = charitySchema.partial().extend({ status: z.enum(['active', 'inactive']).optional() }).parse(req.body);
+  const result = await pool.query(`UPDATE charities SET name = COALESCE($1, name), license_number = COALESCE($2, license_number), phone = COALESCE($3, phone), email = COALESCE($4, email), status = COALESCE($5, status) WHERE id = $6 RETURNING *`, [input.name || null, input.licenseNumber || null, input.phone || null, input.email || null, input.status || null, req.params.id]);
+  if (!result.rows[0]) return res.status(404).json({ message: 'Charity not found' });
+  await audit(req.user.id, 'update', 'charity', req.params.id, input);
+  res.json({ charity: result.rows[0] });
+}));
+app.post('/api/charity/orphans', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = orphanSchema.parse(req.body);
+  const charityId = input.charityId;
+  if (!charityId || !(await canManageCharity(req.user, charityId))) return res.status(403).json({ message: 'Charity membership is required' });
+  const result = await pool.query(`INSERT INTO orphan_profiles (full_name, birth_year, location, story, gender, health_status, education_level, guardian_name, charity_id)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`, [input.fullName, input.birthYear || null, input.location || null, input.story || null, input.gender || null, input.healthStatus || null, input.educationLevel || null, input.guardianName || null, charityId]);
+  await audit(req.user.id, 'create', 'orphan', result.rows[0].id, { charityId });
+  res.status(201).json({ orphan: result.rows[0] });
+}));
+app.patch('/api/charity/orphans/:id', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = orphanSchema.partial().extend({ status: z.enum(['active', 'inactive']).optional() }).parse(req.body);
+  const current = await pool.query('SELECT charity_id FROM orphan_profiles WHERE id = $1', [req.params.id]);
+  if (!current.rows[0] || !(await canManageCharity(req.user, current.rows[0].charity_id))) return res.status(403).json({ message: 'Not allowed to manage this orphan' });
+  const result = await pool.query(`UPDATE orphan_profiles SET full_name = COALESCE($1, full_name), birth_year = COALESCE($2, birth_year), location = COALESCE($3, location), story = COALESCE($4, story), gender = COALESCE($5, gender), health_status = COALESCE($6, health_status), education_level = COALESCE($7, education_level), guardian_name = COALESCE($8, guardian_name), status = COALESCE($9, status) WHERE id = $10 RETURNING *`, [input.fullName || null, input.birthYear || null, input.location || null, input.story || null, input.gender || null, input.healthStatus || null, input.educationLevel || null, input.guardianName || null, input.status || null, req.params.id]);
+  await audit(req.user.id, 'update', 'orphan', req.params.id, input);
+  res.json({ orphan: result.rows[0] });
+}));
+app.post('/api/charity/projects', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = projectSchema.parse(req.body);
+  if (!(await canManageCharity(req.user, input.charityId))) return res.status(403).json({ message: 'Charity membership is required' });
+  const result = await pool.query(`INSERT INTO projects (charity_id, name, description, target_amount, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *`, [input.charityId, input.name, input.description || null, input.targetAmount, input.imageUrl || null]);
+  await audit(req.user.id, 'create', 'project', result.rows[0].id, { charityId: input.charityId });
+  res.status(201).json({ project: result.rows[0] });
+}));
+app.get('/api/charities/:id/projects', asyncRoute(async (req, res) => {
+  const result = await pool.query("SELECT * FROM projects WHERE charity_id = $1 AND status = 'active' ORDER BY created_at DESC", [req.params.id]);
+  res.json({ projects: result.rows });
+}));
+app.patch('/api/charity/projects/:id', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = projectSchema.partial().extend({ status: z.enum(['active', 'inactive']).optional(), currentAmount: z.number().nonnegative().optional() }).parse(req.body);
+  const current = await pool.query('SELECT charity_id FROM projects WHERE id = $1', [req.params.id]);
+  if (!current.rows[0] || !(await canManageCharity(req.user, current.rows[0].charity_id))) return res.status(403).json({ message: 'Not allowed to manage this project' });
+  const result = await pool.query(`UPDATE projects SET name = COALESCE($1,name), description = COALESCE($2,description), target_amount = COALESCE($3,target_amount), current_amount = COALESCE($4,current_amount), image_url = COALESCE($5,image_url), status = COALESCE($6,status) WHERE id = $7 RETURNING *`, [input.name || null, input.description || null, input.targetAmount ?? null, input.currentAmount ?? null, input.imageUrl || null, input.status || null, req.params.id]);
+  await audit(req.user.id, 'update', 'project', req.params.id, input);
+  res.json({ project: result.rows[0] });
+}));
+app.post('/api/admin/charities/:id/members', authenticate, requireRole('admin'), asyncRoute(async (req, res) => {
+  const input = z.object({ userId: z.string().uuid(), membershipRole: z.string().min(2).default('manager') }).parse(req.body);
+  const result = await pool.query(`INSERT INTO charity_members (charity_id, user_id, membership_role) VALUES ($1,$2,$3) ON CONFLICT (charity_id,user_id) DO UPDATE SET membership_role = $3 RETURNING *`, [req.params.id, input.userId, input.membershipRole]);
+  await pool.query("UPDATE users SET role = 'charity' WHERE id = $1 AND role = 'donor'", [input.userId]);
+  await audit(req.user.id, 'assign', 'charity_member', input.userId, { charityId: req.params.id, membershipRole: input.membershipRole });
+  res.status(201).json({ member: result.rows[0] });
+}));
+app.post('/api/charity/orphan-cases', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = z.object({ orphanId: z.string().uuid(), charityId: z.string().uuid(), title: z.string().min(2), description: z.string().min(5), imageUrl: z.string().url().optional() }).parse(req.body);
+  if (!(await canManageCharity(req.user, input.charityId))) return res.status(403).json({ message: 'Charity membership is required' });
+  const result = await pool.query(`INSERT INTO orphan_cases (orphan_id, charity_id, title, description, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *`, [input.orphanId, input.charityId, input.title, input.description, input.imageUrl || null]);
+  await audit(req.user.id, 'create', 'orphan_case', result.rows[0].id, { orphanId: input.orphanId });
+  res.status(201).json({ case: result.rows[0] });
+}));
+app.patch('/api/charity/orphan-cases/:id', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = z.object({ title: z.string().min(2).optional(), description: z.string().min(5).optional(), imageUrl: z.string().url().optional(), status: z.enum(['active', 'inactive']).optional() }).parse(req.body);
+  const current = await pool.query('SELECT charity_id FROM orphan_cases WHERE id = $1', [req.params.id]);
+  if (!current.rows[0] || !(await canManageCharity(req.user, current.rows[0].charity_id))) return res.status(403).json({ message: 'Not allowed to manage this case' });
+  const result = await pool.query(`UPDATE orphan_cases SET title = COALESCE($1,title), description = COALESCE($2,description), image_url = COALESCE($3,image_url), status = COALESCE($4,status) WHERE id = $5 RETURNING *`, [input.title || null, input.description || null, input.imageUrl || null, input.status || null, req.params.id]);
+  await audit(req.user.id, 'update', 'orphan_case', req.params.id, input);
+  res.json({ case: result.rows[0] });
+}));
+app.post('/api/admin/notifications/send', authenticate, requireAdmin, asyncRoute(async (req, res) => {
+  const input = z.object({ title: z.string().min(2), message: z.string().min(2), recipientType: z.enum(['all', 'role', 'user', 'charity']), recipientId: z.string().uuid().optional(), role: z.enum(['donor', 'charity', 'supervisor', 'admin']).optional() }).parse(req.body);
+  let recipients;
+  if (input.recipientType === 'user') recipients = await pool.query('SELECT id FROM users WHERE id = $1', [input.recipientId]);
+  else if (input.recipientType === 'role') recipients = await pool.query('SELECT id FROM users WHERE role = $1', [input.role]);
+  else if (input.recipientType === 'charity') recipients = await pool.query('SELECT user_id AS id FROM charity_members WHERE charity_id = $1', [input.recipientId]);
+  else recipients = await pool.query('SELECT id FROM users WHERE role <> $1', ['admin']);
+  for (const recipient of recipients.rows) await notifyUser(recipient.id, { type: 'admin_announcement', title: input.title, message: input.message });
+  await audit(req.user.id, 'send', 'notification', null, { recipientType: input.recipientType, count: recipients.rows.length });
+  res.status(201).json({ sent: recipients.rows.length });
+}));
+
+// Sponsorship request lifecycle with duplicate-active-sponsorship protection
+app.post('/api/sponsorship-requests', authenticate, requireRole('donor'), asyncRoute(async (req, res) => {
+  const input = requestSchema.parse(req.body);
+  const orphan = await pool.query('SELECT id, full_name, charity_id FROM orphan_profiles WHERE id = $1 AND status = $2', [input.orphanId, 'active']);
+  if (!orphan.rows[0]) return res.status(404).json({ message: 'Orphan not found' });
+  const active = await pool.query("SELECT 1 FROM sponsorships WHERE orphan_id = $1 AND status = 'active'", [input.orphanId]);
+  const pending = await pool.query("SELECT 1 FROM sponsorship_requests WHERE donor_id = $1 AND orphan_id = $2 AND status = 'pending'", [req.user.id, input.orphanId]);
+  if (active.rows[0]) return res.status(409).json({ message: 'This orphan already has an active sponsorship' });
+  if (pending.rows[0]) return res.status(409).json({ message: 'You already have a pending request for this orphan' });
+  const result = await pool.query(`INSERT INTO sponsorship_requests (donor_id, orphan_id, charity_id, monthly_amount, notes) VALUES ($1,$2,$3,$4,$5) RETURNING *`, [req.user.id, input.orphanId, orphan.rows[0].charity_id, input.monthlyAmount, input.notes || null]);
+  const recipients = orphan.rows[0].charity_id ? await pool.query('SELECT user_id FROM charity_members WHERE charity_id = $1', [orphan.rows[0].charity_id]) : { rows: [] };
+  for (const recipient of recipients.rows) await notifyUser(recipient.user_id, { type: 'sponsorship_request', title: 'طلب كفالة جديد', message: `يوجد طلب كفالة جديد لـ ${orphan.rows[0].full_name}.`, entityType: 'sponsorship_request', entityId: result.rows[0].id });
+  await audit(req.user.id, 'create', 'sponsorship_request', result.rows[0].id, { orphanId: input.orphanId });
+  res.status(201).json({ request: result.rows[0] });
+}));
+app.get('/api/sponsorship-requests/my', authenticate, requireRole('donor'), asyncRoute(async (req, res) => {
+  const result = await pool.query(`SELECT r.*, o.full_name AS orphan_name FROM sponsorship_requests r JOIN orphan_profiles o ON o.id = r.orphan_id WHERE r.donor_id = $1 ORDER BY r.created_at DESC`, [req.user.id]);
+  res.json({ requests: result.rows });
+}));
+app.get('/api/charity/sponsorship-requests', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const charityId = req.query.charityId;
+  if (req.user.role === 'charity' && !(await canManageCharity(req.user, charityId))) return res.status(403).json({ message: 'Charity membership is required' });
+  const result = await pool.query(`SELECT r.*, o.full_name AS orphan_name, u.full_name AS donor_name FROM sponsorship_requests r JOIN orphan_profiles o ON o.id = r.orphan_id JOIN users u ON u.id = r.donor_id WHERE ($1::uuid IS NULL OR r.charity_id = $1) ORDER BY r.created_at DESC`, [charityId || null]);
+  res.json({ requests: result.rows });
+}));
+app.patch('/api/charity/sponsorship-requests/:id', authenticate, requireCharity, asyncRoute(async (req, res) => {
+  const input = z.object({ decision: z.enum(['approved', 'rejected']), notes: z.string().max(2000).optional() }).parse(req.body);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const request = await client.query('SELECT * FROM sponsorship_requests WHERE id = $1 FOR UPDATE', [req.params.id]);
+    if (!request.rows[0] || request.rows[0].status !== 'pending') { await client.query('ROLLBACK'); return res.status(404).json({ message: 'Pending request not found' }); }
+    if (!(await canManageCharity(req.user, request.rows[0].charity_id))) { await client.query('ROLLBACK'); return res.status(403).json({ message: 'Not allowed to review this request' }); }
+    let sponsorship = null;
+    if (input.decision === 'approved') {
+      const active = await client.query("SELECT 1 FROM sponsorships WHERE orphan_id = $1 AND status = 'active'", [request.rows[0].orphan_id]);
+      if (active.rows[0]) { await client.query('ROLLBACK'); return res.status(409).json({ message: 'This orphan already has an active sponsorship' }); }
+      sponsorship = (await client.query(`INSERT INTO sponsorships (donor_id, orphan_id, monthly_amount, request_id, charity_id) VALUES ($1,$2,$3,$4,$5) RETURNING *`, [request.rows[0].donor_id, request.rows[0].orphan_id, request.rows[0].monthly_amount, request.rows[0].id, request.rows[0].charity_id])).rows[0];
+    }
+    const updated = (await client.query(`UPDATE sponsorship_requests SET status = $1, reviewed_by = $2, reviewed_at = NOW(), notes = COALESCE($3, notes) WHERE id = $4 RETURNING *`, [input.decision, req.user.id, input.notes || null, req.params.id])).rows[0];
+    await client.query('COMMIT');
+    await notifyUser(updated.donor_id, { type: 'sponsorship_status', title: input.decision === 'approved' ? 'تم قبول طلب الكفالة' : 'تم رفض طلب الكفالة', message: input.decision === 'approved' ? 'تم إنشاء الكفالة ويمكنك متابعتها من لوحة المتبرع.' : (input.notes || 'تم رفض طلب الكفالة من الجهة المشرفة.'), entityType: 'sponsorship_request', entityId: updated.id });
+    await audit(req.user.id, input.decision === 'approved' ? 'approve' : 'reject', 'sponsorship_request', updated.id, { notes: input.notes });
+    res.json({ request: updated, sponsorship });
+  } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+}));
+
+// Donation records and payment provider handoff. Provider confirmation remains server-side.
+app.post('/api/donations', authenticate, requireRole('donor'), asyncRoute(async (req, res) => {
+  const input = z.object({ amount: z.number().positive(), currency: z.string().length(3).default('SAR'), category: z.string().min(2), paymentMethod: z.string().min(2), sponsorshipId: z.string().uuid().optional(), projectId: z.string().uuid().optional() }).parse(req.body);
+  const result = await pool.query(`INSERT INTO donations (donor_id, sponsorship_id, project_id, amount, currency, category, payment_method) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [req.user.id, input.sponsorshipId || null, input.projectId || null, input.amount, input.currency, input.category, input.paymentMethod]);
+  await audit(req.user.id, 'create', 'donation', result.rows[0].id, { amount: input.amount });
+  res.status(201).json({ donation: result.rows[0] });
+}));
+app.post('/api/donations/:id/payment-intent', authenticate, requireRole('donor'), asyncRoute(async (req, res) => {
+  const donation = await pool.query('SELECT * FROM donations WHERE id = $1 AND donor_id = $2', [req.params.id, req.user.id]);
+  if (!donation.rows[0]) return res.status(404).json({ message: 'Donation not found' });
+  const result = await pool.query(`INSERT INTO payments (donation_id, provider, amount, currency, metadata) VALUES ($1,$2,$3,$4,$5) RETURNING *`, [req.params.id, donation.rows[0].payment_method || 'manual', donation.rows[0].amount, donation.rows[0].currency, JSON.stringify({ next: 'connect-provider-webhook' })]);
+  res.status(201).json({ payment: result.rows[0], message: 'Payment intent created; connect a provider webhook before production.' });
+}));
+app.post('/api/payments/:id/status', authenticate, requireAdmin, asyncRoute(async (req, res) => {
+  const input = z.object({ status: z.enum(['pending', 'paid', 'failed', 'refunded']), providerReference: z.string().optional() }).parse(req.body);
+  const payment = await pool.query(`UPDATE payments SET status = $1, provider_reference = COALESCE($2, provider_reference), updated_at = NOW() WHERE id = $3 RETURNING *`, [input.status, input.providerReference || null, req.params.id]);
+  if (!payment.rows[0]) return res.status(404).json({ message: 'Payment not found' });
+  await pool.query('UPDATE donations SET status = $1 WHERE id = $2', [input.status === 'paid' ? 'completed' : input.status, payment.rows[0].donation_id]);
+  await audit(req.user.id, 'update', 'payment', req.params.id, { status: input.status });
+  res.json({ payment: payment.rows[0] });
+}));
+app.get('/api/admin/audit-logs', authenticate, requireRole('admin'), asyncRoute(async (req, res) => {
+  const result = await pool.query(`SELECT a.*, u.full_name AS actor_name FROM audit_logs a LEFT JOIN users u ON u.id = a.actor_id ORDER BY a.created_at DESC LIMIT 200`);
+  res.json({ logs: result.rows });
 }));
 
 async function reportRows(type) {

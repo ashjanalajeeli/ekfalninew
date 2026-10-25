@@ -13,8 +13,17 @@ try {
   const donor = await client.query(`INSERT INTO users (email, password_hash, full_name, role)
     VALUES ('donor@ekfalni.local', $1, 'متبرع تجريبي', 'donor')
     ON CONFLICT (email) DO UPDATE SET role = 'donor' RETURNING id`, [password]);
+  const charityUser = await client.query(`INSERT INTO users (email, password_hash, full_name, role)
+    VALUES ('charity@ekfalni.local', $1, 'جمعية كافل اليتيم', 'charity')
+    ON CONFLICT (email) DO UPDATE SET role = 'charity' RETURNING id`, [password]);
+  const charity = await client.query(`INSERT INTO charities (name, license_number, email)
+    VALUES ('جمعية كافل اليتيم', 'EKFALNI-DEMO-001', 'charity@ekfalni.local')
+    ON CONFLICT (license_number) DO UPDATE SET name = EXCLUDED.name RETURNING id`);
+  await client.query(`INSERT INTO charity_members (charity_id, user_id, membership_role) VALUES ($1, $2, 'manager') ON CONFLICT DO NOTHING`, [charity.rows[0].id, charityUser.rows[0].id]);
   const orphan = await client.query(`INSERT INTO orphan_profiles (full_name, birth_year, location, story)
     VALUES ('أحمد محمد', 2017, 'صنعاء، اليمن', 'طفل محب للتعلم') RETURNING id`);
+  await client.query('UPDATE orphan_profiles SET charity_id = $1 WHERE id = $2', [charity.rows[0].id, orphan.rows[0].id]);
+  await client.query(`INSERT INTO projects (charity_id, name, description, target_amount) VALUES ($1, 'دعم التعليم', 'توفير المستلزمات الدراسية للأيتام', 50000)`, [charity.rows[0].id]);
   await client.query(`INSERT INTO sponsorships (donor_id, orphan_id, monthly_amount) VALUES ($1, $2, 1250) ON CONFLICT DO NOTHING`, [donor.rows[0].id, orphan.rows[0].id]);
   await client.query(`INSERT INTO sponsorship_reports (orphan_id, author_id, title, summary, report_date, metrics)
     VALUES ($1, $2, 'تقرير مارس 2026', 'تقدم دراسي وصحي جديد', CURRENT_DATE, $3)`, [orphan.rows[0].id, admin.rows[0].id, JSON.stringify({ attendance: 92, health: 'stable', education: 'excellent' })]);
