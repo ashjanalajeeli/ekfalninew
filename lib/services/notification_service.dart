@@ -60,4 +60,38 @@ class NotificationService {
       // FCM/APNs registration can be retried after the backend is configured.
     }
   }
+
+  Future<List<InAppNotification>> fetchInAppNotifications() async {
+    final response = await ApiService.instance.get('/notifications');
+    final items = (response.data['notifications'] as List<dynamic>? ?? const []);
+    return items.map((item) => InAppNotification.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> markAsRead(String id) async {
+    await ApiService.instance.patch('/notifications/$id/read');
+  }
+
+  Future<void> markAllAsRead() async {
+    await ApiService.instance.post('/notifications/read-all');
+  }
+}
+
+class InAppNotification {
+  final String id;
+  final String type;
+  final String title;
+  final String message;
+  final DateTime createdAt;
+  final bool unread;
+
+  const InAppNotification({required this.id, required this.type, required this.title, required this.message, required this.createdAt, required this.unread});
+
+  factory InAppNotification.fromJson(Map<String, dynamic> json) => InAppNotification(
+        id: json['id'] as String,
+        type: json['type'] as String? ?? 'general',
+        title: json['title'] as String? ?? 'تنبيه جديد',
+        message: json['message'] as String? ?? '',
+        createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+        unread: json['read_at'] == null,
+      );
 }

@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ekfalni
+      POSTGRES_USER: ekfalni
+      POSTGRES_PASSWORD: ekfalni
+    ports:
+      - "5432:5432"
+    volumes:
+      - ekfalni_pgdata:/var/lib/postgresql/data
+
+volumes:
+  ekfalni_pgdata:
